@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AegisFlow — Offline Demo (recorded incident)</title>
+<style>
+  :root{--bg:#070b12;--panel:#0d1420;--border:#1b2940;--text:#d8e4f2;--dim:#7d90aa;--teal:#2dd4bf;--red:#f87171;--amber:#fbbf24;--green:#34d399;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:14px/1.5 "Segoe UI",system-ui,sans-serif;padding:26px;max-width:1050px;margin:0 auto}
+  h1{font-size:20px} .sub{color:var(--dim);margin:6px 0 18px;font-size:13px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+  canvas{width:100%;height:220px}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--dim);margin-top:8px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  button{font:inherit;font-weight:600;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;background:linear-gradient(135deg,#2dd4bf,#60a5fa);color:#04222b}
+  button:disabled{opacity:.4;cursor:default}
+  .phase{font-size:12px;color:var(--amber)}
+  .timeline{position:relative;height:8px;background:#101a2a;border-radius:4px;margin:6px 0 14px}
+  .timeline i{position:absolute;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#2dd4bf,#60a5fa)}
+  .evt{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:13px}
+  .tag{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:4px;flex-shrink:0}
+  .t-red{background:rgba(248,113,113,.15);color:var(--red)} .t-amber{background:rgba(251,191,36,.15);color:var(--amber)} .t-green{background:rgba(52,211,153,.15);color:var(--green)}
+  .evi{color:var(--dim);font-size:12px}
+  code{background:#101a2a;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:12px}
+</style>
+</head>
+<body>
+<h1>🛡 AegisFlow — recorded incident playback</h1>
+<p class="sub">This page replays a <b>real engine run</b> (60 ticks baseline → <code>http-flood</code> scenario → rate-limit playbook applied at tick 100 → recovery). Every point comes from <code>lib/engine.js</code> via <code>engine.snapshot().history</code>. The live app streams the same data over SSE at <code>node server.js</code> → localhost:8080.</p>
+
+<div class="panel">
+  <div class="controls">
+    <button id="play" onclick="play()">▶ Replay incident</button>
+    <span class="phase" id="phase">tick 0 / 120</span>
+  </div>
+  <div class="timeline"><i id="bar" style="width:0%"></i></div>
+  <canvas id="chart" width="980" height="220"></canvas>
+  <div class="legend">
+    <span><i class="dot" style="background:#60a5fa"></i>legit rps</span>
+    <span><i class="dot" style="background:#f87171"></i>attack rps</span>
+    <span><i class="dot" style="background:#fbbf24"></i>anomaly score (×10, right scale)</span>
+    <span><i class="dot" style="background:#2dd4bf"></i>mitigated at edge</span>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 style="font-size:14px;margin-bottom:8px">Audit trail (as logged by the engine)</h2>
+  <div id="events"></div>
+</div>
+
+<div class="panel">
+  <h2 style="font-size:14px;margin-bottom:8px">The decision loop</h2>
+  <p class="sub" style="margin:0">detect (score ≥ 70 sustained) → classify (entropy of sources/paths → attack class) → recommend (playbook per class) → mitigate (rule applied, edge absorbs) → verify (origin rps collapses, p95 recovers, baseline re-learned). In AWS mode the same playbook specs are pushed to WAFv2 via <code>lib/aws-adapter.js</code>.</p>
+</div>
+
+<script>
+const DATA = {"history":{"t":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140],"legit":[271,266,267,268,263,270,274,271,274,273,274,272,273,275,269,278,279,276,282,273,280,280,278,276,280,282,280,281,278,280,283,280,278,283,276,284,285,288,289,284,283,283,285,287,285,280,280,284,288,292,291,289,289,287,292,287,290,293,292,289,289,296,294,295,296,290,296,301,296,294,290,288,291,296,295,296,300,303,298,299,293,301,297,298,296,298,303,306,304,301,296,300,300,298,297,302,299,302,299,297,298,301,307,297,302,313,308,307,305,304,305,303,299,304,305,300,298,304,301,298],"attack":[28,29,28,27,25,29,29,26,29,26,26,26,29,28,29,30,28,29,30,28,32,31,28,30,29,29,31,28,28,29,28,30,31,31,31,27,31,32,29,28,1257,1302,1362,1219,1353,1333,1320,1259,1329,1314,1352,1289,1334,1397,1401,1367,1281,1356,1310,1332,1346,1399,1361,1336,1387,1442,1310,1382,1476,1389,1404,1318,1345,1331,1366,1418,1339,1357,1382,1342,1367,1368,1388,1405,1414,1397,1395,1358,1410,1454,1329,1341,1257,1344,1356,1374,1405,1342,1309,1303,1306,1416,1441,1328,1407,1333,1417,1428,1378,1378,1344,1413,1436,1330,1388,1415,1366,1339,1345,1353],"mitigated":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1156,1157,1175,1192,1203,1184,1183,1150,1200,1243,1115,1127,1046,1134,1145,1161,1191,1132,1098,1090,1094,1203,1230,1117,1195,1121,1206,1215,1167,1167,1132,1200,1222,1119,1174,1203,1154,1127,1132,1143],"score":[6,4,4,4,1,5,7,4,7,4,4,3,5,5,2,8,7,5,9,2,8,7,3,3,5,7,6,4,2,4,6,3,2,7,0,4,8,12,8,2,56,45,37,30,30,28,26,23,23,20,20,17,17,17,16,14,11,12,10,10,9,10,8,7,8,9,5,7,9,6,6,3,3,3,4,5,2,3,4,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"entropy":[5.75,5.75,5.75,5.75,5.76,5.75,5.74,5.76,5.75,5.76,5.76,5.76,5.75,5.76,5.76,5.74,5.75,5.74,5.73,5.75,5.74,5.75,5.76,5.75,5.75,5.74,5.74,5.75,5.75,5.75,5.75,5.75,5.76,5.75,5.75,5.75,5.75,5.75,5.75,5.75,3.93,3.89,3.87,3.97,3.88,3.88,3.89,3.93,3.89,3.92,3.9,3.92,3.89,3.85,3.85,3.88,3.94,3.89,3.93,3.91,3.89,3.87,3.9,3.92,3.88,3.82,3.93,3.89,3.84,3.89,3.86,3.91,3.9,3.92,3.87,3.87,3.92,3.92,3.89,3.91,5.56,5.57,5.56,5.57,5.56,5.57,5.57,5.58,5.58,5.58,5.57,5.58,5.57,5.56,5.56,5.57,5.58,5.57,5.57,5.57,5.56,5.57,5.59,5.57,5.58,5.59,5.58,5.58,5.58,5.57,5.58,5.58,5.57,5.58,5.58,5.57,5.57,5.58,5.58,5.57]},"alerts":[{"id":4,"ts":1793304524090,"severity":"info","title":"Rate-Limit applied","detail":"path=/api/search → WAF Rate-Based Rule"},{"id":3,"ts":1793304524087,"severity":"clear","title":"Traffic returned to learned baseline","detail":"anomaly class \"volumetric\" cleared · score=28"},{"id":2,"ts":1793304524086,"severity":"warn","title":"Detected: Volumetric SYN Flood (L3/4)","detail":"score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"},{"id":1,"ts":1793304524086,"severity":"warn","title":"Scenario started: HTTP Flood (L7)","detail":"6 botnets IPs hammering /api/search — WAF rate-based rule territory"}],"mitigations":[{"id":1,"type":"rate-limit","scopeType":"path","scopeValue":"/api/search","limit":30,"auto":false,"appliedAt":1793304524090,"dropped":46402.752032609635,"meta":{"label":"Rate-Limit","aws":"WAF Rate-Based Rule","icon":"⏱"},"scopeTxt":"path: /api/search"}]};
+const H = DATA.history, N = H.t.length;
+const $ = id => document.getElementById(id);
+let pos = 0;
+
+function draw(upto) {
+  const c = $('chart').getContext('2d');
+  c.clearRect(0, 0, 980, 220);
+  const maxR = Math.max(...H.legit, ...H.attack, ...H.mitigated, 10) * 1.15;
+  const X = i => 10 + (i / (N - 1)) * 960, Y = v => 210 - (v / maxR) * 195;
+  // mitigation marker
+  const mIdx = DATA.mitigations.length ? H.t.findIndex((t, i) => t >= 100) : -1;
+  function line(arr, color, scale) {
+    c.beginPath(); c.strokeStyle = color; c.lineWidth = 1.8;
+    for (let i = 0; i <= upto && i < N; i++) { const y = Y(scale ? arr[i] * 10 : arr[i]); i ? c.lineTo(X(i), y) : c.moveTo(X(i), y); }
+    c.stroke();
+  }
+  line(H.legit, '#60a5fa'); line(H.attack, '#f87171'); line(H.mitigated, '#2dd4bf'); line(H.score, '#fbbf24', true);
+  if (mIdx > 0 && upto >= mIdx) {
+    c.setLineDash([4, 4]); c.strokeStyle = '#2dd4bf';
+    c.beginPath(); c.moveTo(X(mIdx), 10); c.lineTo(X(mIdx), 210); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#2dd4bf'; c.font = '11px Segoe UI'; c.fillText('rate-limit applied', X(mIdx) + 6, 22);
+  }
+  c.fillStyle = '#7d90aa'; c.font = '11px Consolas';
+  c.fillText('0', 10, 218); c.fillText(Math.round(maxR) + ' rps', 10, 14);
+}
+function render() {
+  draw(pos);
+  $('bar').style.width = (pos / (N - 1) * 100) + '%';
+  $('phase').textContent = 'tick ' + (pos + 1) + ' / ' + N;
+}
+function play() {
+  $('play').disabled = true; pos = 0;
+  const iv = setInterval(() => {
+    pos++; render();
+    if (pos >= N - 1) { clearInterval(iv); $('play').disabled = false; }
+  }, 60);
+}
+const sevTag = { critical: 't-red', warn: 't-amber', info: 't-green', clear: 't-green' };
+$('events').innerHTML = DATA.alerts.map(a =>
+  `<div class="evt"><span class="tag ${sevTag[a.severity] || 't-green'}">${a.severity.toUpperCase()}</span><div><b>${a.title}</b><div class="evi">${a.detail || ''}</div></div></div>`).join('');
+render();
+</script>
+</body>
+</html>

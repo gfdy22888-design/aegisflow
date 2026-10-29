@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AegisFlow — Shield Ops Console edge stack (Team Alpha, AWS x A10 Hack 2026).
+  CloudFront + WAFv2 + Shield Advanced in front of the origin; the mitigation
+  playbook rules that the console applies locally are the same rules this stack
+  runs at the edge (see lib/aws-adapter.js for the SDK dispatcher).
+
+Resources:
+  OriginBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub aegisflow-origin-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # --- IP set the console's `block` playbook populates via aws-adapter.js ---
+  AttackerIPSet:
+    Type: AWS::WAFv2::IPSet
+    Properties:
+      Name: aegisflow-blocked-ips
+      Scope: CLOUDFRONT
+      IPAddressVersion: IPV4
+      Addresses: ['192.0.2.0/24']   # placeholder; dispatcher UpdateIPSet replaces it
+
+  # NOTE: Shield Advanced is an account-level subscription enabled via the Shield
+  # console/API (`aws shield create-protection --resource-arn <EdgeCDN arn>` after
+  # deploy) — it is not a CloudFormation resource type. Everything else here is
+  # deployable as-is; `npm start` with USE_AWS=1 then populates rules via SDK.
+
+  EdgeWAF:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: aegisflow-edge
+      Scope: CLOUDFRONT
+      DefaultAction: { Allow: {} }
+      Rules:
+        # playbook: rate-limit (maps to console rate-limit spec.limit * 60)
+        - Name: aegisflow-rate-limit
+          Priority: 1
+          Statement:
+            RateBasedStatement: { Limit: 1500, AggregateKeyType: IP }
+          Action: { Block: {} }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: ratelimit, SampledRequestsEnabled: true }
+        # playbook: challenge on sensitive paths (CAPTCHA action)
+        - Name: aegisflow-challenge-login
+          Priority: 2
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch: { UriPath: {} }
+              PositionalConstraint: STARTS_WITH
+              SearchString: /api/login
+              TextTransformations: [{ Priority: 0, Type: LOWERCASE }]
+          Action: { Captcha: {} }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: challenge, SampledRequestsEnabled: true }
+        # playbook: block (IPSet fed by the console dispatcher)
+        - Name: aegisflow-block-list
+          Priority: 3
+          Statement:
+            IPSetReferenceStatement: { ARN: !GetAtt AttackerIPSet.Arn }
+          Action: { Block: {} }
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: blocklist, SampledRequestsEnabled: true }
+        # AWS managed baseline
+        - Name: AWSManagedCommon
+          Priority: 4
+          OverrideAction: { None: {} }
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: managed, SampledRequestsEnabled: true }
+      VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: aegisflow-waf, SampledRequestsEnabled: true }
+
+  EdgeCDN:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: origin
+            DomainName: !GetAtt OriginBucket.RegionalDomainName
+            S3OriginConfig: { OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginOAI} }
+        DefaultCacheBehavior:
+          TargetOriginId: origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: true
+        # cache playbook: additional cache policies for static assets absorb GET floods
+        WebACLId: !GetAtt EdgeWAF.Arn
+
+  OriginOAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig: { Comment: aegisflow-oai }
+
+  # --- console KPIs stream as custom metrics; alarms page the operator ---
+  AnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: aegisflow-origin-rps-spike
+      Namespace: AegisFlow/Mitigations
+      MetricName: Applied
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions: [!Ref AlertTopic]
+
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties: { TopicName: aegisflow-alerts }
+
+Outputs:
+  DashboardUrl: { Value: !Sub https://${EdgeCDN.DomainName} }
+  WebACLId: { Value: !Ref EdgeWAF }
+  BlockedIPSetArn: { Value: !GetAtt AttackerIPSet.Arn }

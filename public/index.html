@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AegisFlow — Shield Ops Console</title>
+<style>
+:root{
+  --bg:#070b12;--panel:#0d1420;--panel2:#101a2a;--panel3:#0a111c;--border:#1b2940;
+  --text:#d8e4f2;--dim:#7d90aa;--faint:#4a5c74;
+  --teal:#2dd4bf;--green:#34d399;--red:#f87171;--amber:#fbbf24;--orange:#fb923c;
+  --blue:#60a5fa;--violet:#a78bfa;
+  --mono:"Cascadia Code","JetBrains Mono",Consolas,ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;height:100%}
+body{padding:14px 16px 22px; background-image:radial-gradient(1100px 500px at 75% -10%,rgba(45,212,191,.07),transparent),radial-gradient(900px 420px at 10% 110%,rgba(96,165,250,.05),transparent)}
+.mono{font-family:var(--mono)}
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:16px;padding:10px 16px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel2),var(--panel));margin-bottom:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#0ea5a0,#155e75);display:grid;place-items:center;font-size:17px;box-shadow:0 0 18px rgba(45,212,191,.35)}
+.logo h1{font-size:17px;letter-spacing:.14em;font-weight:600}
+.logo h1 b{color:var(--teal)}
+.logo .sub{font-size:11px;color:var(--dim);letter-spacing:.08em}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:var(--panel3);font-size:12px;color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px currentColor}
+.dot.bad{background:var(--red)} .dot.warn{background:var(--amber)}
+/* toggle */
+.switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none}
+.switch input{display:none}
+.track{width:44px;height:23px;border-radius:999px;background:#16233a;border:1px solid var(--border);position:relative;transition:.2s}
+.track::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--dim);transition:.2s}
+.switch input:checked+.track{background:rgba(45,212,191,.25);border-color:var(--teal)}
+.switch input:checked+.track::after{left:22px;background:var(--teal);box-shadow:0 0 10px var(--teal)}
+.switch .sw-label{font-size:12px;color:var(--dim);letter-spacing:.05em}
+.switch input:checked~.sw-label{color:var(--teal)}
+/* ---------- layout ---------- */
+.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:12px}
+.kpi{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:10px 12px;position:relative;overflow:hidden}
+.kpi .k-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.kpi .k-v{font:600 21px/1.25 var(--mono);margin-top:3px}
+.kpi .k-s{font-size:10.5px;color:var(--faint)}
+.k-v.ok{color:var(--green)} .k-v.warn{color:var(--amber)} .k-v.bad{color:var(--red)} .k-v.info{color:var(--blue)}
+.grid{display:grid;grid-template-columns:2.15fr 1fr;gap:12px}
+.panel{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:13px 15px;min-width:0}
+.panel h2{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.panel h2 .aws-tag{margin-left:auto;font-size:9.5px;letter-spacing:.06em;color:var(--violet);border:1px solid rgba(167,139,250,.35);padding:2px 7px;border-radius:5px;background:rgba(167,139,250,.07);text-transform:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+canvas{display:block;width:100%}
+/* detection card */
+.det-class{font-size:17px;font-weight:600;margin:2px 0 2px}
+.det-rec{font-size:12px;color:var(--dim)}
+.sig{display:grid;gap:6px;margin-top:10px}
+.sig-row{display:grid;grid-template-columns:120px 1fr 34px;align-items:center;gap:8px;font-size:11px}
+.sig-row .s-n{color:var(--dim)}
+.bar{height:7px;border-radius:4px;background:#16233a;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .5s}
+.bar i.hot{background:linear-gradient(90deg,var(--amber),var(--red))}
+.sig-row .s-v{font-family:var(--mono);text-align:right;color:var(--dim)}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:5px 7px;border-bottom:1px solid var(--border)}
+td{padding:6px 7px;border-bottom:1px solid rgba(27,41,64,.5);font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+tr:hover td{background:rgba(45,212,191,.04)}
+.badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-family:var(--mono)}
+.badge.human,.badge.mobile{background:rgba(52,211,153,.12);color:var(--green)}
+.badge.crawler{background:rgba(96,165,250,.12);color:var(--blue)}
+.badge.attacker,.badge.cred{background:rgba(248,113,113,.13);color:var(--red)}
+.mini-btn{border:1px solid var(--border);background:var(--panel3);color:var(--dim);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);transition:.15s}
+.mini-btn:hover{color:var(--text);border-color:var(--teal)}
+.mini-btn.danger:hover{color:var(--red);border-color:var(--red)}
+/* scenario launcher */
+.scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.scen{border:1px solid var(--border);border-radius:9px;background:var(--panel3);padding:9px 10px;cursor:pointer;transition:.15s;text-align:left}
+.scen:hover{border-color:var(--red);background:rgba(248,113,113,.05)}
+.scen.active{border-color:var(--red);background:rgba(248,113,113,.1);box-shadow:0 0 14px rgba(248,113,113,.15)}
+.scen .sc-t{font-size:12px;font-weight:600}
+.scen .sc-d{font-size:10px;color:var(--faint);margin-top:2px;line-height:1.35}
+.scen.benign:hover,.scen.benign.active{border-color:var(--green);background:rgba(52,211,153,.08);box-shadow:0 0 14px rgba(52,211,153,.12)}
+.stop-all{grid-column:1/-1;border:1px dashed var(--border);background:transparent;color:var(--dim);border-radius:8px;padding:7px;cursor:pointer;font-size:11.5px;letter-spacing:.08em}
+.stop-all:hover{color:var(--amber);border-color:var(--amber)}
+/* playbook */
+.pb-row{display:flex;gap:7px;flex-wrap:wrap}
+.pb-btn{flex:1;min-width:118px;border:1px solid var(--border);border-radius:9px;background:var(--panel3);color:var(--text);padding:9px 8px;cursor:pointer;transition:.15s;text-align:center}
+.pb-btn:hover{border-color:var(--teal);background:rgba(45,212,191,.06)}
+.pb-btn .pb-t{font-size:12px;font-weight:600}
+.pb-btn .pb-a{font-size:9px;color:var(--violet);margin-top:2px;letter-spacing:.04em}
+.scope-row{display:flex;gap:8px;margin:10px 0 9px}
+select,input[type=text]{background:var(--panel3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 9px;font-size:12px;font-family:var(--mono);min-width:0}
+input[type=text]{flex:1}
+/* active mitigations */
+.mit{display:flex;align-items:center;gap:9px;border:1px solid rgba(45,212,191,.25);background:rgba(45,212,191,.05);border-radius:8px;padding:7px 10px;margin-bottom:7px}
+.mit.auto{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.06)}
+.mit .m-ic{font-size:15px}
+.mit .m-t{font-size:12px;font-weight:600}
+.mit .m-s{font-size:10.5px;color:var(--dim)}
+.mit .m-aws{font-size:9.5px;color:var(--violet)}
+.mit .m-x{margin-left:auto;border:none;background:transparent;color:var(--faint);cursor:pointer;font-size:14px}
+.mit .m-x:hover{color:var(--red)}
+.empty{color:var(--faint);font-size:11.5px;padding:8px 2px}
+/* alerts */
+.alerts{max-height:330px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.al{border-left:3px solid var(--dim);padding:6px 10px;background:var(--panel3);border-radius:0 7px 7px 0}
+.al.critical{border-color:var(--red);background:rgba(248,113,113,.06)}
+.al.warn{border-color:var(--amber);background:rgba(251,191,36,.05)}
+.al.clear{border-color:var(--green);background:rgba(52,211,153,.05)}
+.al.info{border-color:var(--blue)}
+.al.auto{border-color:var(--violet);background:rgba(167,139,250,.06)}
+.al .a-t{font-size:12px;font-weight:600}
+.al .a-d{font-size:10.5px;color:var(--dim);margin-top:1px;line-height:1.4;word-break:break-word}
+.al .a-time{font-size:9.5px;color:var(--faint);font-family:var(--mono)}
+/* logs */
+.logs{font-family:var(--mono);font-size:10.5px;color:var(--dim);max-height:150px;overflow-y:auto;line-height:1.65}
+.logs .lv-info{color:var(--dim)} .logs .lv-warn{color:var(--amber)} .logs .lv-auto{color:var(--violet)}
+.legend{display:flex;gap:14px;font-size:10.5px;color:var(--dim);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#1e2c44;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+footer{margin-top:12px;text-align:center;font-size:10.5px;color:var(--faint);letter-spacing:.06em}
+.flash{animation:flash 1s ease}
+@keyframes flash{0%{box-shadow:0 0 0 rgba(248,113,113,.8)}30%{box-shadow:0 0 22px rgba(248,113,113,.55)}100%{box-shadow:none}}
+@media(max-width:1180px){.kpis{grid-template-columns:repeat(4,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-mark">🛡</div>
+    <div>
+      <h1>AEGIS<b>FLOW</b></h1>
+      <div class="sub">SHIELD OPS CONSOLE · CLOUDFRONT + WAF + SHIELD ADVANCED + LAMBDA@EDGE</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <span class="pill"><span class="dot" id="connDot"></span><span id="connTxt">CONNECTING</span></span>
+    <span class="pill mono" id="clock">--:--:--</span>
+    <label class="switch">
+      <input type="checkbox" id="autoToggle" onchange="toggleAuto(this.checked)">
+      <span class="track"></span>
+      <span class="sw-label">AUTO-MITIGATE (AI RESPONSE)</span>
+    </label>
+  </div>
+</header>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+    <div class="panel">
+      <h2>Live Traffic — Edge View <span class="aws-tag">AWS CloudFront</span></h2>
+      <canvas id="trafficChart" height="240"></canvas>
+      <div class="legend">
+        <span><i style="background:#34d399"></i>Legitimate (served)</span>
+        <span><i style="background:#f87171"></i>Attack reaching origin</span>
+        <span><i style="background:#fbbf24"></i>Mitigated at edge</span>
+        <span style="margin-left:auto" class="mono" id="chartRange"></span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Top Sources <span class="aws-tag">WAF + Shield Advanced telemetry</span></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Source IP</th><th>ASN</th><th>Geo</th><th>Class</th><th>Path</th><th>rps</th><th>mitigated</th><th>Actions</th></tr></thead>
+          <tbody id="sourcesBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Attack Simulator — Scenario Launcher</h2>
+      <div class="scenarios" id="scenarios"></div>
+    </div>
+    <div class="panel">
+      <h2>Event Log</h2>
+      <div class="logs" id="logs"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+    <div class="panel">
+      <h2>Anomaly Score <span class="aws-tag">CloudWatch + detection ensemble</span></h2>
+      <canvas id="gauge" height="150"></canvas>
+      <div style="text-align:center;margin-top:-46px">
+        <div class="det-class" id="detClass">Calibrating…</div>
+        <div class="det-rec" id="detRec"></div>
+        <div class="det-rec mono" id="detAws" style="color:var(--violet);margin-top:3px"></div>
+      </div>
+      <div class="sig" id="sigs"></div>
+    </div>
+    <div class="panel">
+      <h2>Alert Feed <span class="aws-tag">EventBridge → SNS</span></h2>
+      <div class="alerts" id="alerts"></div>
+    </div>
+    <div class="panel">
+      <h2>Mitigation Playbook <span class="aws-tag">WAFv2 · Shield · Lambda@Edge</span></h2>
+      <div class="scope-row">
+        <select id="scopeType">
+          <option value="kind">source class</option>
+          <option value="geo">country</option>
+          <option value="path">path prefix</option>
+          <option value="asn">ASN</option>
+        </select>
+        <input type="text" id="scopeValue" placeholder="attacker | CN | /api/login">
+      </div>
+      <div class="pb-row">
+        <button class="pb-btn" onclick="applyPB('rate-limit')"><div class="pb-t">⏱ Rate-Limit</div><div class="pb-a">WAF Rate-Based Rule</div></button>
+        <button class="pb-btn" onclick="applyPB('challenge')"><div class="pb-t">🧩 Challenge</div><div class="pb-a">WAF CAPTCHA Action</div></button>
+        <button class="pb-btn" onclick="applyPB('block')"><div class="pb-t">⛔ Block</div><div class="pb-a">WAF Deny / Shield Adv</div></button>
+        <button class="pb-btn" onclick="applyPB('geo-block')"><div class="pb-t">🌐 Geo-Block</div><div class="pb-a">WAF GeoMatch</div></button>
+        <button class="pb-btn" onclick="applyPB('cache')"><div class="pb-t">⚡ Edge Cache</div><div class="pb-a">CloudFront Cache Policy</div></button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Active Mitigations <span class="aws-tag" id="mitCount"></span></h2>
+      <div id="mitigations"></div>
+    </div>
+  </div>
+</div>
+
+<footer>AegisFlow · local simulation of CloudFront + AWS WAF + Shield Advanced + Lambda@Edge · set <span class="mono" style="color:var(--violet)">USE_AWS=1</span> to mirror mitigations to a real account (see aws/ARCHITECTURE.md)</footer>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(Math.round(n*10)/10));
+const ago = (ts) => { const s = Math.max(0,(Date.now()-ts)/1000); return s<60?Math.round(s)+'s ago':s<3600?Math.round(s/60)+'m ago':Math.round(s/3600)+'h ago'; };
+let snap = null, es = null;
+
+/* ------------------------------ API ------------------------------ */
+async function api(path, body){
+  try{ await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+  catch(e){ console.warn(e); }
+}
+function toggleAuto(v){ api('/api/auto',{enabled:v}); }
+function toggleScenario(name, active){ api('/api/scenario', active?{action:'stop',name}:{action:'start',name}); }
+function applyPB(type){
+  const scopeType = $('scopeType').value, scopeValue = $('scopeValue').value.trim();
+  const defaults = {kind:'attacker',geo:'CN',asn:'',path:'/api/login'};
+  const val = scopeValue || defaults[scopeType] || '';
+  if(scopeType==='asn' && !val){ alert('Enter an ASN, e.g. AS4134 Chinanet'); return; }
+  api('/api/mitigation',{op:'add',spec:{type,scopeType,scopeValue:val,limit:25}});
+}
+function rowAction(type, scopeType, scopeValue){ api('/api/mitigation',{op:'add',spec:{type,scopeType,scopeValue,limit:20}}); }
+function removeMit(id){ api('/api/mitigation',{op:'remove',id}); }
+
+/* ---------------------------- SSE stream ---------------------------- */
+function connect(){
+  es = new EventSource('/api/stream');
+  es.addEventListener('tick', e => {
+    const first = snap === null;
+    snap = JSON.parse(e.data);
+    $('connDot').className = 'dot'; $('connTxt').textContent = 'LIVE · tick '+snap.tick;
+    if(first && snap.autoMitigate) $('autoToggle').checked = true;
+    renderAll();
+  });
+  es.onerror = () => { $('connDot').className='dot warn'; $('connTxt').textContent='RECONNECTING'; };
+}
+connect();
+setInterval(()=>{ const d=new Date(); $('clock').textContent = d.toTimeString().slice(0,8)+' UTC'+(d.getTimezoneOffset()>0?'-':'+')+Math.abs(d.getTimezoneOffset()/60); },1000);
+
+/* ------------------------------ KPIs ------------------------------ */
+function renderKpis(){
+  const k = snap.kpis; if(!k) return;
+  const items = [
+    ['Edge rps', fmt(k.rps), k.rps>1500?'bad':k.rps>700?'warn':'ok', 'CloudFront'],
+    ['Origin rps', fmt(k.originRps), k.originRps>1200?'bad':'ok', 'ALB/EC2'],
+    ['Mitigated/s', fmt(k.mitigatedRps), k.mitigatedRps>0?'info':'', 'WAF/Shield'],
+    ['Unique IPs', fmt(k.uniqueIps), '', 'Source map'],
+    ['IP entropy', k.entropyIp.toFixed(2), k.entropyIp<2.2?'warn':'ok', 'bits · low=flood'],
+    ['Error ratio', (k.errRatio*100).toFixed(1)+'%', k.errRatio>0.25?'bad':'ok', '401+404'],
+    ['p95 latency', k.p95+'ms', k.p95>600?'bad':k.p95>250?'warn':'ok', 'origin'],
+    ['Score', k.score, k.score>=65?'bad':k.score>=40?'warn':'ok', k.severity]
+  ];
+  $('kpis').innerHTML = items.map(([l,v,c,s])=>
+    `<div class="kpi"><div class="k-l">${l}</div><div class="k-v ${c}">${v}</div><div class="k-s">${s}</div></div>`).join('');
+}
+
+/* ---------------------------- canvas: setup ---------------------------- */
+function prepCanvas(cv){
+  const dpr = window.devicePixelRatio||1, w = cv.clientWidth, h = cv.getAttribute('height')*1;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w,h};
+}
+/* ---------------------------- traffic chart ---------------------------- */
+function drawTraffic(){
+  const cv = $('trafficChart'); const {ctx,w,h} = prepCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const H = snap.history; const N = 90;
+  const legit = H.legit.slice(-N), attack = H.attack.slice(-N), mit = H.mitigated.slice(-N);
+  const n = legit.length; if(!n) return;
+  const padL=46,padR=10,padT=10,padB=20;
+  const cw = w-padL-padR, ch = h-padT-padB;
+  let maxV = 1; for(let i=0;i<n;i++) maxV = Math.max(maxV, legit[i]+attack[i]);
+  maxV = Math.ceil(maxV/500)*500 || 500;
+  const X = i => padL + (n===1?cw:cw*i/(n-1));
+  const Y = v => padT + ch - (v/maxV)*ch;
+  // grid
+  ctx.strokeStyle='#152238'; ctx.fillStyle='#4a5c74'; ctx.font='10px '+getComputedStyle(document.body).getPropertyValue('--mono'); ctx.textAlign='right';
+  for(let g=0; g<=4; g++){ const v=maxV*g/4, y=Y(v); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke(); ctx.fillText(fmt(v), padL-6, y+3); }
+  // stacked areas: legit (bottom), attack (on top of legit), mitigated (top)
+  const stack = (bottom, top, fill, stroke) => {
+    ctx.beginPath();
+    for(let i=0;i<n;i++){ const x=X(i), y=Y(bottom[i]+ (top?top[i]:0)); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    if(top){ for(let i=n-1;i>=0;i--){ ctx.lineTo(X(i), Y(bottom[i])); } } else { ctx.lineTo(X(n-1),Y(0)); ctx.lineTo(X(0),Y(0)); }
+    ctx.closePath(); ctx.fillStyle=fill; ctx.fill();
+    ctx.beginPath();
+    for(let i=0;i<n;i++){ const x=X(i), y=Y(bottom[i]+(top?top[i]:0)); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.strokeStyle=stroke; ctx.lineWidth=1.5; ctx.stroke();
+  };
+  stack(legit, attack, 'rgba(248,113,113,.32)', 'rgba(248,113,113,.9)');
+  stack(legit, null, 'rgba(52,211,153,.22)', 'rgba(52,211,153,.9)');
+  stack(legit.map((v,i)=>v+attack[i]), mit, 'rgba(251,191,36,.30)', 'rgba(251,191,36,.95)');
+  // "now" marker
+  ctx.fillStyle='#2dd4bf'; ctx.fillRect(X(n-1)-1, padT, 2, ch);
+  $('chartRange').textContent = `last ${n}s · peak ${fmt(maxV)} rps scale`;
+}
+/* ---------------------------- gauge ---------------------------- */
+function drawGauge(){
+  const cv = $('gauge'); const {ctx,w,h} = prepCanvas(cv);
+  const k = snap.kpis; const score = k?k.score:0;
+  const cx=w/2, cy=h-18, r=Math.min(w/2-14, h-30);
+  const a0=Math.PI*0.85, a1=Math.PI*2.15;
+  ctx.clearRect(0,0,w,h);
+  const zones=[[0,40,'#1d5c46'],[40,65,'#6b5619'],[65,85,'#7a4114'],[85,100,'#6e2020']];
+  for(const [z0,z1,col] of zones){
+    ctx.beginPath(); ctx.arc(cx,cy,r,a0+(a1-a0)*z0/100,a0+(a1-a0)*z1/100);
+    ctx.lineWidth=13; ctx.strokeStyle=col; ctx.stroke();
+  }
+  // needle
+  const ang = a0+(a1-a0)*Math.min(100,score)/100;
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.max(a0,ang-0.03),Math.min(a1,ang+0.03));
+  const scoreCol = score>=85?'#f87171':score>=65?'#fb923c':score>=40?'#fbbf24':'#34d399';
+  ctx.lineWidth=15; ctx.strokeStyle=scoreCol; ctx.shadowColor=scoreCol; ctx.shadowBlur=12; ctx.stroke(); ctx.shadowBlur=0;
+  // ticks
+  ctx.fillStyle='#4a5c74'; ctx.font='10px monospace'; ctx.textAlign='center';
+  for(const t of [0,40,65,85,100]){
+    const ta=a0+(a1-a0)*t/100;
+    ctx.fillText(t, cx+Math.cos(ta)*(r+14), cy+Math.sin(ta)*(r+14)+3);
+  }
+  ctx.fillStyle=scoreCol; ctx.font='700 30px '+getComputedStyle(document.body).getPropertyValue('--mono');
+  ctx.fillText(score, cx, cy-r*0.32);
+}
+/* ---------------------------- detection card ---------------------------- */
+function renderDetection(){
+  const k = snap.kpis; if(!k) return;
+  const cls = k.classification;
+  $('detClass').textContent = cls.labelHuman + (cls.label==='normal'?'':' · '+Math.round(cls.confidence*100)+'%');
+  $('detClass').style.color = k.score>=65?'var(--red)':k.score>=40?'var(--amber)':'var(--green)';
+  $('detRec').textContent = 'Recommended: ' + ({'rate-limit':'Rate-limit offending scope','challenge':'CAPTCHA challenge scope','block':'Block offending sources','cache':'Serve from edge cache — do NOT block','monitor':'Monitor only'})[cls.recommendation] || cls.recommendation;
+  $('detAws').textContent = '→ ' + cls.awsMapping;
+  const names = {rate:'EWMA rate z-score', conc:'IP entropy drop', pathConc:'Path concentration', err:'Error-ratio spike', conn:'Conn-hold anomaly'};
+  $('sigs').innerHTML = Object.entries(names).map(([key,label])=>{
+    const v = k.signals[key]||0;
+    return `<div class="sig-row"><span class="s-n">${label}</span><span class="bar"><i class="${v>0.5?'hot':''}" style="width:${Math.round(v*100)}%"></i></span><span class="s-v">${v.toFixed(2)}</span></div>`;
+  }).join('');
+}
+/* ---------------------------- sources table ---------------------------- */
+function renderSources(){
+  const k = snap.kpis; if(!k) return;
+  $('sourcesBody').innerHTML = k.topSources.map(s=>{
+    const isBad = s.kind==='attacker'||s.kind==='cred';
+    return `<tr>
+      <td style="color:${isBad?'var(--red)':'var(--text)'}">${s.ip}</td>
+      <td style="color:var(--dim)">${s.asn}</td><td>${s.geo}</td>
+      <td><span class="badge ${s.kind}">${s.kind}</span></td>
+      <td style="color:var(--faint);max-width:150px;overflow:hidden;text-overflow:ellipsis">${s.path}</td>
+      <td style="color:${s.rps>100?'var(--red)':''}">${fmt(s.rps)}</td>
+      <td style="color:var(--amber)">${s.mitigated>0?'▼'+fmt(s.mitigated):'—'}</td>
+      <td>
+        <button class="mini-btn danger" onclick="rowAction('block','ip','${s.ip}')">BLOCK</button>
+        <button class="mini-btn" onclick="rowAction('rate-limit','ip','${s.ip}')">LIMIT</button>
+        <button class="mini-btn" onclick="rowAction('challenge','ip','${s.ip}')">CAPTCHA</button>
+      </td></tr>`;
+  }).join('') || '<tr><td colspan="8" class="empty">no traffic</td></tr>';
+}
+/* ---------------------------- scenarios ---------------------------- */
+let SCEN_LIST = [];
+function renderScenarios(){
+  if(!SCEN_LIST.length && snap.scenarios !== undefined){}
+  if(!SCEN_LIST.length) return;
+  const active = new Set(snap.scenarios.map(s=>s.name));
+  $('scenarios').innerHTML = SCEN_LIST.map(s=>
+    `<button class="scen ${s.name==='flash-crowd'?'benign':''} ${active.has(s.name)?'active':''}" onclick="toggleScenario('${s.name}',${active.has(s.name)})">
+      <div class="sc-t">${active.has(s.name)?'■':'▶'} ${s.label}</div><div class="sc-d">${s.detail}</div></button>`).join('')
+    + `<button class="stop-all" onclick="api('/api/scenario',{action:'stop-all'})">■ STOP ALL SCENARIOS — return to baseline</button>`;
+}
+/* ---------------------------- alerts ---------------------------- */
+function renderAlerts(){
+  $('alerts').innerHTML = snap.alerts.slice(0,18).map(a=>
+    `<div class="al ${a.severity}"><div class="a-t">${a.title}</div><div class="a-d">${a.detail}</div><div class="a-time">${new Date(a.ts).toTimeString().slice(0,8)} · ${ago(a.ts)}</div></div>`).join('')
+    || '<div class="empty">No alerts — baseline calm.</div>';
+}
+/* ---------------------------- mitigations ---------------------------- */
+function renderMits(){
+  const ms = snap.mitigations;
+  $('mitCount').textContent = ms.length? ms.length+' active':'';
+  $('mitigations').innerHTML = ms.map(m=>
+    `<div class="mit ${m.auto?'auto':''}">
+      <span class="m-ic">${m.meta.icon}</span>
+      <div><div class="m-t">${m.meta.label} ${m.auto?'<span style="color:var(--violet);font-size:9.5px">· AUTO</span>':''}</div>
+      <div class="m-s">${m.scopeTxt} · dropped ${fmt(m.dropped)} req total</div>
+      <div class="m-aws">→ ${m.meta.aws}</div></div>
+      <button class="m-x" title="remove" onclick="removeMit(${m.id})">✕</button>
+    </div>`).join('')
+    + (ms.length? `<button class="stop-all" style="width:100%" onclick="api('/api/mitigation',{op:'clear'})">CLEAR ALL MITIGATIONS</button>` : '<div class="empty">No active mitigations. Launch a scenario, then use the playbook or arm auto-mitigate.</div>');
+}
+/* ---------------------------- logs ---------------------------- */
+function renderLogs(){
+  $('logs').innerHTML = snap.logs.map(l=>
+    `<div><span style="color:#33425c">${new Date(l.ts).toTimeString().slice(0,8)}</span> <span class="lv-${l.level}">[${l.level.toUpperCase()}]</span> ${l.msg}</div>`).join('') || '<div>—</div>';
+}
+/* ---------------------------- render loop ---------------------------- */
+function renderAll(){
+  renderKpis(); drawTraffic(); drawGauge(); renderDetection();
+  renderSources(); renderScenarios(); renderAlerts(); renderMits(); renderLogs();
+}
+window.addEventListener('resize', ()=>{ if(snap) { drawTraffic(); drawGauge(); } });
+/* fetch scenario list once */
+fetch('/api/state').then(r=>r.json()).then(s=>{ SCEN_LIST = s.scenarioList || []; }).catch(()=>{});
+</script>
+</body>
+</html>
