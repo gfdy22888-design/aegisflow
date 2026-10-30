@@ -4,7 +4,8 @@
   "description": "AegisFlow — AI traffic anomaly detection & DDoS mitigation ops console (Team Alpha, AWS x A10 Hack 2026)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/"
   },
   "engines": { "node": ">=18" },
   "dependencies": {},
