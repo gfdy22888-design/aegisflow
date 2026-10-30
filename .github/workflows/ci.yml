@@ -1,0 +1,24 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - name: smoke — server boots and serves the console
+        run: |
+          node server.js &
+          sleep 3
+          curl -fsS http://localhost:8080/api/health | grep -q '"ok":true'
+          curl -fsS http://localhost:8080/ | grep -q "AEGISFLOW"

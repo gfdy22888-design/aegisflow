@@ -83,6 +83,7 @@ Functions + dashboard bucket).
 
 ```bash
 node server.js        # → http://localhost:8080  (no npm install, no credentials)
+npm test              # 10 engine regression tests (node:test, zero deps)
 # USE_AWS=1 node server.js   # same UI, mitigation dispatcher targets real AWS WAFv2
 ```
 
