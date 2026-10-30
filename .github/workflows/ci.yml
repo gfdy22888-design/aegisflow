@@ -19,6 +19,12 @@ jobs:
       - name: smoke — server boots and serves the console
         run: |
           node server.js &
-          sleep 3
-          curl -fsS http://localhost:8080/api/health | grep -q '"ok":true'
+          SERVER_PID=$!
+          ok=""
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8080/api/health | grep -q '"ok":true'; then ok=1; break; fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then echo "server did not become healthy in 20s"; exit 1; fi
           curl -fsS http://localhost:8080/ | grep -q "AEGISFLOW"
+          kill $SERVER_PID
