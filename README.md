@@ -11,6 +11,22 @@ load is visible immediately.
 
 ![deps](https://img.shields.io/badge/npm%20deps-0-2dd4bf) ![realtime](https://img.shields.io/badge/stream-SSE-blue) ![mode](https://img.shields.io/badge/USE__AWS%3D1-WAFv2%20dispatcher-orange)
 
+## Screenshots
+
+**Baseline — calm, calibrated** (score 0, entropy healthy, no alerts):
+
+![baseline](docs/screenshots/01-baseline.png)
+
+**Autopilot in action** — HTTP flood detected (conf=1.0) → rate-limit applied automatically →
+attackers capped at 30 rps each (▼ counters), origin offloaded, p95 recovered (41 ms):
+
+![autopilot](docs/screenshots/03-autopilot-mitigated.png)
+
+**The trust moment** — a 2.6k-rps benign flash crowd (478 unique IPs, autopilot still ARMED)
+is classified benign at 85% confidence: *serve from edge cache, do NOT block*. Zero mitigations:
+
+![benign restraint](docs/screenshots/04-benign-restraint.png)
+
 ## Problem
 
 When an L7 flood hits, the questions that matter are: *what kind of attack is this, which

@@ -252,7 +252,7 @@ function connect(){
     const first = snap === null;
     snap = JSON.parse(e.data);
     $('connDot').className = 'dot'; $('connTxt').textContent = 'LIVE · tick '+snap.tick;
-    if(first && snap.autoMitigate) $('autoToggle').checked = true;
+    $('autoToggle').checked = !!snap.autoMitigate; // keep the toggle honest with engine state
     renderAll();
   });
   es.onerror = () => { $('connDot').className='dot warn'; $('connTxt').textContent='RECONNECTING'; };
