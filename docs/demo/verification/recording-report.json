@@ -1,0 +1,1134 @@
+{
+  "recordedAt": "2026-11-02T13:05:46.179Z",
+  "traffic": "synthetic",
+  "cloudDeployment": false,
+  "shots": [
+    {
+      "name": "01-baseline",
+      "time": 10,
+      "kpis": {
+        "tick": 70,
+        "ts": 1793624756492,
+        "rps": 335,
+        "rawRps": 335,
+        "originRps": 335,
+        "mitigatedRps": 0,
+        "legitRps": 295,
+        "attackRps": 40,
+        "uniqueIps": 58,
+        "entropyIp": 5.71,
+        "entropyPath": 3.47,
+        "errRatio": 0.02,
+        "avgHold": 0.99,
+        "p95": 38,
+        "statusCodes": {
+          "c200": 328,
+          "c401": 0,
+          "c404": 7,
+          "c403": 0
+        },
+        "score": 9,
+        "severity": "normal",
+        "z": 1.13,
+        "signals": {
+          "rate": 0.23,
+          "conc": 0,
+          "pathConc": 0,
+          "err": 0,
+          "conn": 0
+        },
+        "classification": {
+          "label": "normal",
+          "labelHuman": "Normal traffic",
+          "confidence": 0.92,
+          "recommendation": "monitor",
+          "awsMapping": "CloudWatch anomaly detection"
+        },
+        "topSources": [
+          {
+            "ip": "134.121.94.177",
+            "asn": "AS396982 Google Cloud",
+            "geo": "VN",
+            "kind": "crawler",
+            "rps": 17.3,
+            "mitigated": 0,
+            "path": "/robots.txt",
+            "hold": 0.21
+          },
+          {
+            "ip": "105.0.95.238",
+            "asn": "AS6805 Telekom DE",
+            "geo": "NL",
+            "kind": "human",
+            "rps": 10.7,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.32
+          },
+          {
+            "ip": "67.252.27.175",
+            "asn": "AS3320 DT AG",
+            "geo": "BR",
+            "kind": "human",
+            "rps": 9.9,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.76
+          },
+          {
+            "ip": "27.57.181.207",
+            "asn": "AS6805 Telekom DE",
+            "geo": "US",
+            "kind": "human",
+            "rps": 9.7,
+            "mitigated": 0,
+            "path": "/api/recommend",
+            "hold": 0.53
+          },
+          {
+            "ip": "94.17.204.190",
+            "asn": "AS28573 Claro BR",
+            "geo": "GB",
+            "kind": "human",
+            "rps": 9.3,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 0.59
+          },
+          {
+            "ip": "159.6.72.230",
+            "asn": "AS4134 Chinanet",
+            "geo": "IN",
+            "kind": "human",
+            "rps": 8.9,
+            "mitigated": 0,
+            "path": "/api/reviews",
+            "hold": 0.44
+          },
+          {
+            "ip": "194.224.210.231",
+            "asn": "AS6805 Telekom DE",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 8.8,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.94
+          },
+          {
+            "ip": "52.45.185.80",
+            "asn": "AS12389 Rostelecom",
+            "geo": "US",
+            "kind": "crawler",
+            "rps": 8.4,
+            "mitigated": 0,
+            "path": "/sitemap.xml",
+            "hold": 0.21
+          },
+          {
+            "ip": "8.84.87.73",
+            "asn": "AS15169 Google",
+            "geo": "FR",
+            "kind": "human",
+            "rps": 8.2,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 1.81
+          },
+          {
+            "ip": "221.80.55.81",
+            "asn": "AS2856 BT UK",
+            "geo": "DE",
+            "kind": "human",
+            "rps": 7.8,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 1.94
+          },
+          {
+            "ip": "186.89.36.92",
+            "asn": "AS2856 BT UK",
+            "geo": "FR",
+            "kind": "human",
+            "rps": 7.8,
+            "mitigated": 0,
+            "path": "/api/search?q=shoes",
+            "hold": 1.23
+          },
+          {
+            "ip": "12.197.40.90",
+            "asn": "AS28573 Claro BR",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 7.7,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 1.97
+          }
+        ],
+        "uptimeSec": 10
+      },
+      "autoMitigate": false,
+      "mitigations": [],
+      "alerts": []
+    },
+    {
+      "name": "02-attack",
+      "time": 36,
+      "kpis": {
+        "tick": 96,
+        "ts": 1793624782736,
+        "rps": 1797,
+        "rawRps": 1797,
+        "originRps": 1797,
+        "mitigatedRps": 0,
+        "legitRps": 301,
+        "attackRps": 1496,
+        "uniqueIps": 64,
+        "entropyIp": 3.87,
+        "entropyPath": 3.44,
+        "errRatio": 0.02,
+        "avgHold": 0.47,
+        "p95": 51,
+        "statusCodes": {
+          "c200": 1768,
+          "c401": 0,
+          "c404": 29,
+          "c403": 0
+        },
+        "score": 56,
+        "severity": "warning",
+        "z": 176.48,
+        "signals": {
+          "rate": 1,
+          "conc": 1,
+          "pathConc": 0,
+          "err": 0,
+          "conn": 0
+        },
+        "classification": {
+          "label": "http-flood",
+          "labelHuman": "HTTP Flood (L7)",
+          "confidence": 1,
+          "recommendation": "rate-limit",
+          "awsMapping": "WAF Rate-Based Rule (AWS::WAFv2::Rule RateStatement)"
+        },
+        "topSources": [
+          {
+            "ip": "23.129.72.55",
+            "asn": "AS12389 Rostelecom",
+            "geo": "US",
+            "kind": "attacker",
+            "rps": 286.7,
+            "mitigated": 0,
+            "path": "/api/search?q=v9dc2h",
+            "hold": 0.33
+          },
+          {
+            "ip": "91.219.25.63",
+            "asn": "AS9009 M247",
+            "geo": "CN",
+            "kind": "attacker",
+            "rps": 279.9,
+            "mitigated": 0,
+            "path": "/api/search?q=imqerk",
+            "hold": 0.53
+          },
+          {
+            "ip": "194.26.40.100",
+            "asn": "AS4134 Chinanet",
+            "geo": "IN",
+            "kind": "attacker",
+            "rps": 252.3,
+            "mitigated": 0,
+            "path": "/api/search?q=xu9r96",
+            "hold": 0.27
+          },
+          {
+            "ip": "45.155.229.23",
+            "asn": "AS45899 VNPT",
+            "geo": "VN",
+            "kind": "attacker",
+            "rps": 216.8,
+            "mitigated": 0,
+            "path": "/api/search?q=1q8cl8",
+            "hold": 0.29
+          },
+          {
+            "ip": "5.188.50.101",
+            "asn": "AS14061 DigitalOcean",
+            "geo": "IN",
+            "kind": "attacker",
+            "rps": 212.6,
+            "mitigated": 0,
+            "path": "/api/search?q=6nwdpc",
+            "hold": 0.16
+          },
+          {
+            "ip": "91.219.24.123",
+            "asn": "AS4837 China Unicom",
+            "geo": "IN",
+            "kind": "attacker",
+            "rps": 208.1,
+            "mitigated": 0,
+            "path": "/api/search?q=n7svci",
+            "hold": 0.46
+          },
+          {
+            "ip": "134.121.94.177",
+            "asn": "AS396982 Google Cloud",
+            "geo": "VN",
+            "kind": "crawler",
+            "rps": 17.3,
+            "mitigated": 0,
+            "path": "/robots.txt",
+            "hold": 0.21
+          },
+          {
+            "ip": "67.252.27.175",
+            "asn": "AS3320 DT AG",
+            "geo": "BR",
+            "kind": "human",
+            "rps": 11.6,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.76
+          },
+          {
+            "ip": "105.0.95.238",
+            "asn": "AS6805 Telekom DE",
+            "geo": "NL",
+            "kind": "human",
+            "rps": 11.4,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.32
+          },
+          {
+            "ip": "27.57.181.207",
+            "asn": "AS6805 Telekom DE",
+            "geo": "US",
+            "kind": "human",
+            "rps": 9.7,
+            "mitigated": 0,
+            "path": "/api/recommend",
+            "hold": 0.53
+          },
+          {
+            "ip": "8.84.87.73",
+            "asn": "AS15169 Google",
+            "geo": "FR",
+            "kind": "human",
+            "rps": 9.1,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 1.81
+          },
+          {
+            "ip": "186.89.36.92",
+            "asn": "AS2856 BT UK",
+            "geo": "FR",
+            "kind": "human",
+            "rps": 8.8,
+            "mitigated": 0,
+            "path": "/api/search?q=shoes",
+            "hold": 1.23
+          }
+        ],
+        "uptimeSec": 36
+      },
+      "autoMitigate": false,
+      "mitigations": [],
+      "alerts": [
+        {
+          "id": 2,
+          "ts": 1793624771639,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 1,
+          "ts": 1793624770927,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        }
+      ]
+    },
+    {
+      "name": "03-auto-mitigated",
+      "time": 63,
+      "kpis": {
+        "tick": 122,
+        "ts": 1793624808937,
+        "rps": 517,
+        "rawRps": 2060,
+        "originRps": 517,
+        "mitigatedRps": 1543,
+        "legitRps": 299,
+        "attackRps": 1760,
+        "uniqueIps": 64,
+        "entropyIp": 5.56,
+        "entropyPath": 4.09,
+        "errRatio": 0.02,
+        "avgHold": 0.78,
+        "p95": 42,
+        "statusCodes": {
+          "c200": 507,
+          "c401": 0,
+          "c404": 9,
+          "c403": 1543
+        },
+        "score": 42,
+        "severity": "warning",
+        "z": 19.27,
+        "signals": {
+          "rate": 1,
+          "conc": 0.14,
+          "pathConc": 0,
+          "err": 0,
+          "conn": 0
+        },
+        "classification": {
+          "label": "anomalous",
+          "labelHuman": "Anomalous (unclassified)",
+          "confidence": 0.5,
+          "recommendation": "monitor",
+          "awsMapping": "CloudWatch anomaly detection"
+        },
+        "topSources": [
+          {
+            "ip": "5.188.75.73",
+            "asn": "AS12389 Rostelecom",
+            "geo": "IN",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 334,
+            "path": "/api/search?q=ftlkdd",
+            "hold": 0.28
+          },
+          {
+            "ip": "45.155.92.231",
+            "asn": "AS396982 Google Cloud",
+            "geo": "BR",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 292.8,
+            "path": "/api/search?q=ec1tp9",
+            "hold": 0.41
+          },
+          {
+            "ip": "45.155.114.136",
+            "asn": "AS45899 VNPT",
+            "geo": "RU",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 281.1,
+            "path": "/api/search?q=i8lnje",
+            "hold": 0.5
+          },
+          {
+            "ip": "194.26.210.221",
+            "asn": "AS45899 VNPT",
+            "geo": "BR",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 281.1,
+            "path": "/api/search?q=0z6pez",
+            "hold": 0.11
+          },
+          {
+            "ip": "194.26.235.194",
+            "asn": "AS4134 Chinanet",
+            "geo": "VN",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 207.6,
+            "path": "/api/search?q=a1zfol",
+            "hold": 0.36
+          },
+          {
+            "ip": "91.219.34.146",
+            "asn": "AS396982 Google Cloud",
+            "geo": "US",
+            "kind": "attacker",
+            "rps": 30,
+            "mitigated": 146.5,
+            "path": "/api/search?q=cn8jsg",
+            "hold": 0.58
+          },
+          {
+            "ip": "134.121.94.177",
+            "asn": "AS396982 Google Cloud",
+            "geo": "VN",
+            "kind": "crawler",
+            "rps": 14.9,
+            "mitigated": 0,
+            "path": "/robots.txt",
+            "hold": 0.21
+          },
+          {
+            "ip": "67.252.27.175",
+            "asn": "AS3320 DT AG",
+            "geo": "BR",
+            "kind": "human",
+            "rps": 10.8,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.76
+          },
+          {
+            "ip": "194.224.210.231",
+            "asn": "AS6805 Telekom DE",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 10.2,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.94
+          },
+          {
+            "ip": "94.17.204.190",
+            "asn": "AS28573 Claro BR",
+            "geo": "GB",
+            "kind": "human",
+            "rps": 10.1,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 0.59
+          },
+          {
+            "ip": "105.0.95.238",
+            "asn": "AS6805 Telekom DE",
+            "geo": "NL",
+            "kind": "human",
+            "rps": 10,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.32
+          },
+          {
+            "ip": "124.236.221.45",
+            "asn": "AS6805 Telekom DE",
+            "geo": "US",
+            "kind": "human",
+            "rps": 9,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 0.91
+          }
+        ],
+        "uptimeSec": 63
+      },
+      "autoMitigate": true,
+      "mitigations": [
+        {
+          "id": 1,
+          "type": "rate-limit",
+          "scopeType": "path",
+          "scopeValue": "/api/search",
+          "limit": 30,
+          "auto": true,
+          "appliedAt": 1793624796854,
+          "dropped": 17491.980028650178,
+          "meta": {
+            "label": "Rate-Limit",
+            "aws": "WAF Rate-Based Rule",
+            "icon": "⏱"
+          },
+          "scopeTxt": "path: /api/search"
+        }
+      ],
+      "alerts": [
+        {
+          "id": 9,
+          "ts": 1793624797863,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=42"
+        },
+        {
+          "id": 8,
+          "ts": 1793624796854,
+          "severity": "info",
+          "title": "AUTO · Rate-Limit applied",
+          "detail": "path=/api/search → WAF Rate-Based Rule"
+        },
+        {
+          "id": 7,
+          "ts": 1793624794835,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 6,
+          "ts": 1793624793941,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        },
+        {
+          "id": 5,
+          "ts": 1793624792943,
+          "severity": "info",
+          "title": "Auto-mitigation ARMED",
+          "detail": "Engine will execute playbook recommendations when an attack is confirmed for 3 consecutive seconds (score ≥ 70, or a classified attack at confidence ≥ 0.6)."
+        },
+        {
+          "id": 4,
+          "ts": 1793624791819,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=13"
+        },
+        {
+          "id": 3,
+          "ts": 1793624790930,
+          "severity": "info",
+          "title": "All attack scenarios stopped",
+          "detail": "Baseline traffic only."
+        },
+        {
+          "id": 2,
+          "ts": 1793624771639,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 1,
+          "ts": 1793624770927,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        }
+      ]
+    },
+    {
+      "name": "04-benign-restraint",
+      "time": 85,
+      "kpis": {
+        "tick": 144,
+        "ts": 1793624831126,
+        "rps": 2546,
+        "rawRps": 2546,
+        "originRps": 2546,
+        "mitigatedRps": 0,
+        "legitRps": 2508,
+        "attackRps": 39,
+        "uniqueIps": 478,
+        "entropyIp": 8.79,
+        "entropyPath": 3.25,
+        "errRatio": 0.02,
+        "avgHold": 0.87,
+        "p95": 39,
+        "statusCodes": {
+          "c200": 2506,
+          "c401": 0,
+          "c404": 40,
+          "c403": 0
+        },
+        "score": 40,
+        "severity": "warning",
+        "z": 241.28,
+        "signals": {
+          "rate": 1,
+          "conc": 0,
+          "pathConc": 0,
+          "err": 0,
+          "conn": 0
+        },
+        "classification": {
+          "label": "benign-spike",
+          "labelHuman": "Benign flash crowd",
+          "confidence": 0.85,
+          "recommendation": "cache",
+          "awsMapping": "CloudFront edge caching + origin shield (AWS::CloudFront)"
+        },
+        "topSources": [
+          {
+            "ip": "134.121.94.177",
+            "asn": "AS396982 Google Cloud",
+            "geo": "VN",
+            "kind": "crawler",
+            "rps": 17.6,
+            "mitigated": 0,
+            "path": "/robots.txt",
+            "hold": 0.21
+          },
+          {
+            "ip": "194.224.210.231",
+            "asn": "AS6805 Telekom DE",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 11.4,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.94
+          },
+          {
+            "ip": "140.254.118.167",
+            "asn": "AS55836 Reliance Jio",
+            "geo": "JP",
+            "kind": "human",
+            "rps": 11.1,
+            "mitigated": 0,
+            "path": "/api/products",
+            "hold": 1.24
+          },
+          {
+            "ip": "130.167.248.198",
+            "asn": "AS2856 BT UK",
+            "geo": "SG",
+            "kind": "human",
+            "rps": 10.8,
+            "mitigated": 0,
+            "path": "/api/search?q=shoes",
+            "hold": 0.41
+          },
+          {
+            "ip": "27.75.195.48",
+            "asn": "AS3320 DT AG",
+            "geo": "US",
+            "kind": "mobile",
+            "rps": 10.8,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 0.19
+          },
+          {
+            "ip": "150.125.93.101",
+            "asn": "AS3320 DT AG",
+            "geo": "FR",
+            "kind": "mobile",
+            "rps": 10.6,
+            "mitigated": 0,
+            "path": "/api/user/me",
+            "hold": 0.55
+          },
+          {
+            "ip": "105.0.95.238",
+            "asn": "AS6805 Telekom DE",
+            "geo": "NL",
+            "kind": "human",
+            "rps": 10.3,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.32
+          },
+          {
+            "ip": "35.238.66.126",
+            "asn": "AS3320 DT AG",
+            "geo": "NL",
+            "kind": "mobile",
+            "rps": 10.1,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.29
+          },
+          {
+            "ip": "25.204.20.131",
+            "asn": "AS6805 Telekom DE",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 10.1,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.11
+          },
+          {
+            "ip": "46.187.227.75",
+            "asn": "AS28573 Claro BR",
+            "geo": "SG",
+            "kind": "mobile",
+            "rps": 10.1,
+            "mitigated": 0,
+            "path": "/api/search?q=shoes",
+            "hold": 0.4
+          },
+          {
+            "ip": "67.252.27.175",
+            "asn": "AS3320 DT AG",
+            "geo": "BR",
+            "kind": "human",
+            "rps": 9.9,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.76
+          },
+          {
+            "ip": "221.54.155.20",
+            "asn": "AS8075 Microsoft",
+            "geo": "DE",
+            "kind": "mobile",
+            "rps": 9.9,
+            "mitigated": 0,
+            "path": "/api/reviews",
+            "hold": 0.27
+          }
+        ],
+        "uptimeSec": 85
+      },
+      "autoMitigate": true,
+      "mitigations": [],
+      "alerts": [
+        {
+          "id": 12,
+          "ts": 1793624820038,
+          "severity": "warn",
+          "title": "Detected: benign-spike",
+          "detail": "score=40 conf=0.85 · signals(rate=1, entDrop=0, err=0, conn=0)"
+        },
+        {
+          "id": 11,
+          "ts": 1793624819899,
+          "severity": "warn",
+          "title": "Scenario started: Flash Crowd (benign spike)",
+          "detail": "Legit viral traffic — the AI must NOT block this one"
+        },
+        {
+          "id": 10,
+          "ts": 1793624816919,
+          "severity": "info",
+          "title": "All attack scenarios stopped",
+          "detail": "Baseline traffic only."
+        },
+        {
+          "id": 9,
+          "ts": 1793624797863,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=42"
+        },
+        {
+          "id": 8,
+          "ts": 1793624796854,
+          "severity": "info",
+          "title": "AUTO · Rate-Limit applied",
+          "detail": "path=/api/search → WAF Rate-Based Rule"
+        },
+        {
+          "id": 7,
+          "ts": 1793624794835,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 6,
+          "ts": 1793624793941,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        },
+        {
+          "id": 5,
+          "ts": 1793624792943,
+          "severity": "info",
+          "title": "Auto-mitigation ARMED",
+          "detail": "Engine will execute playbook recommendations when an attack is confirmed for 3 consecutive seconds (score ≥ 70, or a classified attack at confidence ≥ 0.6)."
+        },
+        {
+          "id": 4,
+          "ts": 1793624791819,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=13"
+        },
+        {
+          "id": 3,
+          "ts": 1793624790930,
+          "severity": "info",
+          "title": "All attack scenarios stopped",
+          "detail": "Baseline traffic only."
+        },
+        {
+          "id": 2,
+          "ts": 1793624771639,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 1,
+          "ts": 1793624770927,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        }
+      ]
+    },
+    {
+      "name": "05-aws-mapping",
+      "time": 102
+    },
+    {
+      "name": "06-aws-code",
+      "time": 114
+    },
+    {
+      "name": "07-closing",
+      "time": 124,
+      "kpis": {
+        "tick": 183,
+        "ts": 1793624870451,
+        "rps": 2534,
+        "rawRps": 2534,
+        "originRps": 2534,
+        "mitigatedRps": 0,
+        "legitRps": 2494,
+        "attackRps": 40,
+        "uniqueIps": 478,
+        "entropyIp": 8.79,
+        "entropyPath": 3.26,
+        "errRatio": 0.02,
+        "avgHold": 0.87,
+        "p95": 39,
+        "statusCodes": {
+          "c200": 2494,
+          "c401": 0,
+          "c404": 40,
+          "c403": 0
+        },
+        "score": 40,
+        "severity": "warning",
+        "z": 239.94,
+        "signals": {
+          "rate": 1,
+          "conc": 0,
+          "pathConc": 0,
+          "err": 0,
+          "conn": 0
+        },
+        "classification": {
+          "label": "benign-spike",
+          "labelHuman": "Benign flash crowd",
+          "confidence": 0.85,
+          "recommendation": "cache",
+          "awsMapping": "CloudFront edge caching + origin shield (AWS::CloudFront)"
+        },
+        "topSources": [
+          {
+            "ip": "134.121.94.177",
+            "asn": "AS396982 Google Cloud",
+            "geo": "VN",
+            "kind": "crawler",
+            "rps": 18.8,
+            "mitigated": 0,
+            "path": "/robots.txt",
+            "hold": 0.21
+          },
+          {
+            "ip": "105.0.95.238",
+            "asn": "AS6805 Telekom DE",
+            "geo": "NL",
+            "kind": "human",
+            "rps": 10.9,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.32
+          },
+          {
+            "ip": "221.54.155.20",
+            "asn": "AS8075 Microsoft",
+            "geo": "DE",
+            "kind": "mobile",
+            "rps": 10.8,
+            "mitigated": 0,
+            "path": "/api/reviews",
+            "hold": 0.27
+          },
+          {
+            "ip": "67.95.152.91",
+            "asn": "AS55836 Reliance Jio",
+            "geo": "JP",
+            "kind": "mobile",
+            "rps": 10.8,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.22
+          },
+          {
+            "ip": "67.252.27.175",
+            "asn": "AS3320 DT AG",
+            "geo": "BR",
+            "kind": "human",
+            "rps": 10.6,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.76
+          },
+          {
+            "ip": "8.84.87.73",
+            "asn": "AS15169 Google",
+            "geo": "FR",
+            "kind": "human",
+            "rps": 10.6,
+            "mitigated": 0,
+            "path": "/checkout",
+            "hold": 1.81
+          },
+          {
+            "ip": "194.224.210.231",
+            "asn": "AS6805 Telekom DE",
+            "geo": "KR",
+            "kind": "human",
+            "rps": 10.3,
+            "mitigated": 0,
+            "path": "/",
+            "hold": 0.94
+          },
+          {
+            "ip": "43.204.10.55",
+            "asn": "AS4134 Chinanet",
+            "geo": "IN",
+            "kind": "mobile",
+            "rps": 10.3,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.59
+          },
+          {
+            "ip": "140.95.3.101",
+            "asn": "AS15169 Google",
+            "geo": "AU",
+            "kind": "mobile",
+            "rps": 10.2,
+            "mitigated": 0,
+            "path": "/api/cart",
+            "hold": 0.32
+          },
+          {
+            "ip": "33.32.214.136",
+            "asn": "AS8075 Microsoft",
+            "geo": "CA",
+            "kind": "human",
+            "rps": 10,
+            "mitigated": 0,
+            "path": "/api/user/me",
+            "hold": 1.5
+          },
+          {
+            "ip": "111.183.104.53",
+            "asn": "AS8075 Microsoft",
+            "geo": "SG",
+            "kind": "human",
+            "rps": 10,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 1.51
+          },
+          {
+            "ip": "94.17.204.190",
+            "asn": "AS28573 Claro BR",
+            "geo": "GB",
+            "kind": "human",
+            "rps": 9.7,
+            "mitigated": 0,
+            "path": "/api/products/42",
+            "hold": 0.59
+          }
+        ],
+        "uptimeSec": 124
+      },
+      "autoMitigate": true,
+      "mitigations": [],
+      "alerts": [
+        {
+          "id": 12,
+          "ts": 1793624820038,
+          "severity": "warn",
+          "title": "Detected: benign-spike",
+          "detail": "score=40 conf=0.85 · signals(rate=1, entDrop=0, err=0, conn=0)"
+        },
+        {
+          "id": 11,
+          "ts": 1793624819899,
+          "severity": "warn",
+          "title": "Scenario started: Flash Crowd (benign spike)",
+          "detail": "Legit viral traffic — the AI must NOT block this one"
+        },
+        {
+          "id": 10,
+          "ts": 1793624816919,
+          "severity": "info",
+          "title": "All attack scenarios stopped",
+          "detail": "Baseline traffic only."
+        },
+        {
+          "id": 9,
+          "ts": 1793624797863,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=42"
+        },
+        {
+          "id": 8,
+          "ts": 1793624796854,
+          "severity": "info",
+          "title": "AUTO · Rate-Limit applied",
+          "detail": "path=/api/search → WAF Rate-Based Rule"
+        },
+        {
+          "id": 7,
+          "ts": 1793624794835,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 6,
+          "ts": 1793624793941,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        },
+        {
+          "id": 5,
+          "ts": 1793624792943,
+          "severity": "info",
+          "title": "Auto-mitigation ARMED",
+          "detail": "Engine will execute playbook recommendations when an attack is confirmed for 3 consecutive seconds (score ≥ 70, or a classified attack at confidence ≥ 0.6)."
+        },
+        {
+          "id": 4,
+          "ts": 1793624791819,
+          "severity": "clear",
+          "title": "Traffic returned to learned baseline",
+          "detail": "anomaly class \"http-flood\" cleared · score=13"
+        },
+        {
+          "id": 3,
+          "ts": 1793624790930,
+          "severity": "info",
+          "title": "All attack scenarios stopped",
+          "detail": "Baseline traffic only."
+        },
+        {
+          "id": 2,
+          "ts": 1793624771639,
+          "severity": "warn",
+          "title": "Detected: HTTP Flood (L7)",
+          "detail": "score=56 conf=1 · signals(rate=1, entDrop=1, err=0, conn=0)"
+        },
+        {
+          "id": 1,
+          "ts": 1793624770927,
+          "severity": "warn",
+          "title": "Scenario started: HTTP Flood (L7)",
+          "detail": "6 botnets IPs hammering /api/search — WAF rate-based rule territory"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "layout": {
+    "viewport": 1920,
+    "width": 1920,
+    "height": 1134
+  },
+  "videoPath": ".delivery-work/video/page@868195dbccb402604877b14c3acd45ac.webm",
+  "status": "passed"
+}

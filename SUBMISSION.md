@@ -1,49 +1,82 @@
-# AegisFlow — Devpost Submission (AWS x A10 Hack 2026)
+# AegisFlow — Devpost copy-ready fields
 
-## Title
-AegisFlow — the DDoS decision loop: detect, classify, mitigate, verify
+## Project name
+AegisFlow
 
-## Pitch (57 words)
-When an L7 flood hits, dashboards show graphs — not decisions. AegisFlow closes the loop:
-a multi-signal engine (EWMA residual, source/path entropy, error ratio, hold-time) classifies
-HTTP floods, slowloris, credential stuffing and *benign spikes* in one-second ticks, recommends
-the playbook, applies rate-limit/challenge/block/cache rules, and shows origin load collapse
-in real time — deployable 1:1 to CloudFront + WAF + Shield.
+## Elevator pitch
+Turn a traffic surge into a response decision. AegisFlow combines adaptive rate baselines, entropy and signature analysis to classify attacks, recommend playbooks, apply local mitigation and show origin recovery. A benign flash crowd stays unblocked. Explore the interactive simulation, narrated demo and an offline-tested AWS integration prototype.
 
 ## Inspiration
-Incident responders don't lack telemetry, they lack a decision loop. We wanted a console that
-answers "what is this, what do I click, did it work?" — and that tells you when NOT to act
-(false positives cost real customers too).
+Security dashboards tell responders that traffic changed. We wanted a console that
+also answers: what is happening, which response fits, and did it help? Just as
+important, legitimate popularity should not be mistaken for an attack.
 
 ## What it does
-A traffic simulator (human baseline + 5 injectable scenarios) feeds a detection engine that
-scores anomalies 0–100 and classifies them with entropy analysis. Every class maps to a
-playbook; applying one immediately changes raw-rps vs origin-rps, dropped counters and p95.
-Autopilot applies the recommended playbook at score ≥ 70 — and deliberately does NOT trigger
-on the benign flash-crowd scenario.
+AegisFlow connects five injectable traffic scenarios to an adaptive detector,
+signature classifier, recommended response, mitigation engine and audit trail.
+Operators can compare raw ingress, origin load and traffic offloaded at the edge.
+Automatic response confirms the classification before applying a playbook. A diverse
+flash crowd receives a caching recommendation and stays unblocked while automatic
+response remains armed.
+
+All demo traffic and performance figures are synthetic. The browser demo runs the
+same engine as the Node console, without accounts, credentials or external APIs.
 
 ## How we built it
-Pure Node stdlib server with SSE realtime (zero dependencies), a UMD detection engine shared
-between Node and browser, canvas ops-console UI. The mitigation dispatcher has two
-implementations behind one interface: local simulator, and production-shaped AWS SDK v3 calls
-(UpdateWebACL with RateBasedStatement/CAPTCHA/GeoMatch, UpdateIPSet, PutMetricData) selected
-by USE_AWS=1. A deployable SAM stack (CloudFront + WAFv2 + IPSet + alarms) mirrors every
-playbook as a real edge rule.
+We used JavaScript, Node.js standard libraries, Server-Sent Events, Canvas, an EWMA
+rate baseline, Shannon entropy and a rule-based classifier. The local application
+has no npm dependencies.
+
+The repository also contains an optional AWS SDK v3 integration prototype for
+supported manual WAFv2 rule additions and CloudWatch mitigation counters. It reads
+and preserves existing WebACL rules, supplies optimistic-lock tokens, and tests
+request behavior with fake SDK clients. An un-deployed SAM reference template maps
+the design to CloudFront, WAFv2, private S3 and CloudWatch/SNS. We did not deploy or
+benchmark a live AWS account. Cloud autopilot and runtime cache changes remain
+future work.
 
 ## Challenges we ran into
-Keeping the EWMA baseline honest during sustained attacks (an attack becomes the new normal
-if you adapt too fast) — solved with slow variance adaptation plus entropy signals that stay
-discriminative under floods. Designing playbooks that map cleanly onto WAFv2 primitives
-instead of inventing our own enforcement.
+A sustained attack can become the new EWMA baseline if adaptation continues during
+an incident. We freeze baseline learning under active attacks or mitigation and
+test that scores remain elevated. A single-vector flood can also stay below a
+weighted score threshold, so local autopilot considers a confirmed attack class
+alongside its score. We added regression tests for sustained benign crowds and
+corrected ingress/origin/offload accounting so the visible response can be checked.
 
 ## Accomplishments we're proud of
-The benign-spike scenario: a demo where the correct behavior is *restraint*. And a mitigation
-whose effect is measurable on screen: 1,797 raw rps → 526 origin rps the second you click.
+The full local response loop is visible and interactive. Attack sources reach a
+30-rps cap after automatic path rate limiting, while ingress and origin are shown
+separately. The benign crowd demonstrates restraint: high source diversity, a cache
+recommendation and zero blocking. The submission includes an English narrated
+1080p demo, captions, screenshots, a hosted browser simulation and automated tests.
 
 ## What we learned
-WAFv2's statement grammar maps almost perfectly onto incident-response playbooks; entropy is
-the cheapest robust attack feature; and an ops tool earns trust by logging every action.
+Rate alone is insufficient for deciding whether a surge is malicious. Source
+diversity, target concentration and connection behavior provide useful context.
+Mapping simulator controls to WAF also exposes important differences: a rolling
+rate window is not an exact per-second cap, updates require concurrency tokens,
+and synthetic source labels have no direct enforcement equivalent.
 
 ## What's next
-Lambda@Edge per-request scoring, ASN/geo reputation feeds, SOAR webhooks, and a live account
-mode where the simulator is replaced by CloudFront access logs in Kinesis.
+Validate the adapter in a dedicated AWS account, synchronize cloud rule removal
+and expiry, ingest real telemetry, add authentication and durable audit storage,
+and evaluate the detector against labeled traffic. Add cloud autopilot only after
+enforcement and rollback behavior have been validated.
+
+## Built with
+JavaScript, Node.js, HTML, CSS, Canvas, Server-Sent Events, AWS SDK for JavaScript v3,
+AWS WAFv2, Amazon CloudFront, Amazon S3, Amazon CloudWatch, Amazon SNS, AWS SAM.
+AWS services are integration targets represented by code and IaC; live deployment
+is not claimed. Detection uses adaptive statistics and rules, not a generative model.
+
+## Links
+- Repository: https://github.com/gfdy22888-design/aegisflow
+- Try it out / narrated video: https://gfdy22888-design.github.io/aegisflow/
+- Interactive simulation: https://gfdy22888-design.github.io/aegisflow/live.html
+- Direct MP4: https://gfdy22888-design.github.io/aegisflow/docs/demo/aegisflow-demo.mp4
+
+## AI assistance disclosure
+AI tools assisted code, documentation and review. English narration is generated
+with Microsoft Zira. The screenshots and video show synthetic data from the
+working local engine. No production traffic, measured cloud results, or live AWS
+deployment are represented.

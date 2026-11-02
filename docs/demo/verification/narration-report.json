@@ -1,0 +1,97 @@
+{
+  "voice": "Microsoft Zira Desktop",
+  "synthetic": true,
+  "segments": [
+    {
+      "start": 1,
+      "end": 9,
+      "text": "When traffic surges, responders need decisions. What is happening? What should we do? And did it work?",
+      "rawDuration": 9.093197278911564,
+      "playbackSpeed": 1.1583690801161228
+    },
+    {
+      "start": 10,
+      "end": 18,
+      "text": "Aegis Flow brings detection, classification, response, and verification into one operations console.",
+      "rawDuration": 7.028027210884353,
+      "playbackSpeed": 1
+    },
+    {
+      "start": 18,
+      "end": 24,
+      "text": "All traffic is synthetic. The baseline shows healthy source diversity and low latency.",
+      "rawDuration": 6.423492063492064,
+      "playbackSpeed": 1.0980328313661647
+    },
+    {
+      "start": 25,
+      "end": 33,
+      "text": "Now we launch an HTTP flood. A small group of sources repeatedly targets the search endpoint.",
+      "rawDuration": 7.363265306122449,
+      "playbackSpeed": 1
+    },
+    {
+      "start": 34,
+      "end": 42,
+      "text": "The detector combines rate deviation, source and path entropy, error ratio, and connection duration to classify the attack.",
+      "rawDuration": 8.7481179138322,
+      "playbackSpeed": 1.1144099253289428
+    },
+    {
+      "start": 45,
+      "end": 53,
+      "text": "We stop the first attack, arm automatic mitigation, and launch a second round. No manual rate limit is applied.",
+      "rawDuration": 8.578049886621315,
+      "playbackSpeed": 1.0927452084867917
+    },
+    {
+      "start": 54,
+      "end": 62,
+      "text": "After three hot ticks, the engine applies a path rate limit. Attacking sources are capped at thirty requests per second.",
+      "rawDuration": 8.283038548752835,
+      "playbackSpeed": 1.0551641463379409
+    },
+    {
+      "start": 63,
+      "end": 70,
+      "text": "Ingress stays high while origin load falls. The yellow band shows edge mitigation. Every action is logged.",
+      "rawDuration": 8.44829931972789,
+      "playbackSpeed": 1.2333283678434879
+    },
+    {
+      "start": 74,
+      "end": 83,
+      "text": "Next, a flash crowd. Hundreds of diverse users are legitimate. High traffic alone does not justify blocking.",
+      "rawDuration": 9.152879818594105,
+      "playbackSpeed": 1.0342237083157182
+    },
+    {
+      "start": 84,
+      "end": 94,
+      "text": "Automatic response remains armed. The engine recommends caching and leaves mitigations at zero. An operations tool earns trust by knowing when to hold back.",
+      "rawDuration": 11.082448979591836,
+      "playbackSpeed": 1.1251217238164302
+    },
+    {
+      "start": 96,
+      "end": 107,
+      "text": "The AWS integration is a prototype. The repository includes a Cloud Front and WAF reference stack, plus an optional adapter for supported manual rule additions.",
+      "rawDuration": 11.532154195011337,
+      "playbackSpeed": 1.0628713543789252
+    },
+    {
+      "start": 110,
+      "end": 118,
+      "text": "Offline tests check payloads, rule preservation, and locking. No live AWS deployment is claimed.",
+      "rawDuration": 7.918231292517007,
+      "playbackSpeed": 1.008691884397071
+    },
+    {
+      "start": 120,
+      "end": 129,
+      "text": "Aegis Flow makes response decisions visible. Try the browser simulation, replay an incident, and explore the code.",
+      "rawDuration": 8.742947845804988,
+      "playbackSpeed": 1
+    }
+  ]
+}

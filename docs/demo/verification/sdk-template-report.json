@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-02T13:06:47.944Z",
+  "yamlParsed": true,
+  "sdk": {
+    "wafv2": "3.1161.0",
+    "cloudwatch": "3.1161.0"
+  },
+  "manualPlaybooksSerialized": 4,
+  "actualNetworkRequests": 0,
+  "credentialSource": "fake offline test values",
+  "note": "Actual SDK serialization and fake HTTP responses; no AWS account or CloudFormation deployment validation."
+}

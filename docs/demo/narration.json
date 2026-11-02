@@ -1,0 +1,15 @@
+[
+  {"start":1,"end":9,"text":"When traffic surges, responders need decisions. What is happening? What should we do? And did it work?"},
+  {"start":10,"end":18,"text":"Aegis Flow brings detection, classification, response, and verification into one operations console."},
+  {"start":18,"end":24,"text":"All traffic is synthetic. The baseline shows healthy source diversity and low latency."},
+  {"start":25,"end":33,"text":"Now we launch an HTTP flood. A small group of sources repeatedly targets the search endpoint."},
+  {"start":34,"end":42,"text":"The detector combines rate deviation, source and path entropy, error ratio, and connection duration to classify the attack."},
+  {"start":45,"end":53,"text":"We stop the first attack, arm automatic mitigation, and launch a second round. No manual rate limit is applied."},
+  {"start":54,"end":62,"text":"After three hot ticks, the engine applies a path rate limit. Attacking sources are capped at thirty requests per second."},
+  {"start":63,"end":70,"text":"Ingress stays high while origin load falls. The yellow band shows edge mitigation. Every action is logged."},
+  {"start":74,"end":83,"text":"Next, a flash crowd. Hundreds of diverse users are legitimate. High traffic alone does not justify blocking."},
+  {"start":84,"end":94,"text":"Automatic response remains armed. The engine recommends caching and leaves mitigations at zero. An operations tool earns trust by knowing when to hold back."},
+  {"start":96,"end":107,"text":"The AWS integration is a prototype. The repository includes a Cloud Front and WAF reference stack, plus an optional adapter for supported manual rule additions."},
+  {"start":110,"end":118,"text":"Offline tests check payloads, rule preservation, and locking. No live AWS deployment is claimed."},
+  {"start":120,"end":129,"text":"Aegis Flow makes response decisions visible. Try the browser simulation, replay an incident, and explore the code."}
+]

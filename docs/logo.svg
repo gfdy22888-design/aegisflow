@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0b2031"/><stop offset="1" stop-color="#070d17"/></linearGradient><linearGradient id="a" x2="1" y2="1"><stop stop-color="#2dd4bf"/><stop offset="1" stop-color="#60a5fa"/></linearGradient></defs>
+<rect width="640" height="640" rx="100" fill="url(#bg)"/>
+<path d="M320 87 481 148v124c0 101-61 170-161 214-100-44-161-113-161-214V148Z" fill="#102b3b" stroke="url(#a)" stroke-width="14"/>
+<path d="M208 288h62l27-66 47 138 31-72h57" fill="none" stroke="url(#a)" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="320" y="556" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="43" font-weight="700" letter-spacing="5" fill="#d8e4f2">AEGIS<tspan fill="#2dd4bf">FLOW</tspan></text>
+</svg>

@@ -1,2 +1,4 @@
 node_modules/
 *.log
+.delivery-work/
+submission-package.zip

@@ -1,0 +1,103 @@
+1
+00:00:01,000 --> 00:00:05,000
+When traffic surges, responders need decisions. What is happening? What should we
+
+2
+00:00:05,000 --> 00:00:09,000
+do? And did it work?
+
+3
+00:00:10,000 --> 00:00:18,000
+Aegis Flow brings detection, classification, response, and verification into one operations console.
+
+4
+00:00:18,000 --> 00:00:21,000
+All traffic is synthetic. The baseline shows healthy source diversity and low
+
+5
+00:00:21,000 --> 00:00:24,000
+latency.
+
+6
+00:00:25,000 --> 00:00:29,000
+Now we launch an HTTP flood. A small group of sources repeatedly
+
+7
+00:00:29,000 --> 00:00:33,000
+targets the search endpoint.
+
+8
+00:00:34,000 --> 00:00:38,000
+The detector combines rate deviation, source and path entropy, error ratio, and
+
+9
+00:00:38,000 --> 00:00:42,000
+connection duration to classify the attack.
+
+10
+00:00:45,000 --> 00:00:49,000
+We stop the first attack, arm automatic mitigation, and launch a second
+
+11
+00:00:49,000 --> 00:00:53,000
+round. No manual rate limit is applied.
+
+12
+00:00:54,000 --> 00:00:58,000
+After three hot ticks, the engine applies a path rate limit. Attacking
+
+13
+00:00:58,000 --> 00:01:02,000
+sources are capped at thirty requests per second.
+
+14
+00:01:03,000 --> 00:01:06,500
+Ingress stays high while origin load falls. The yellow band shows edge
+
+15
+00:01:06,500 --> 00:01:10,000
+mitigation. Every action is logged.
+
+16
+00:01:14,000 --> 00:01:18,500
+Next, a flash crowd. Hundreds of diverse users are legitimate. High traffic
+
+17
+00:01:18,500 --> 00:01:23,000
+alone does not justify blocking.
+
+18
+00:01:24,000 --> 00:01:29,000
+Automatic response remains armed. The engine recommends caching and leaves mitigations at
+
+19
+00:01:29,000 --> 00:01:34,000
+zero. An operations tool earns trust by knowing when to hold back.
+
+20
+00:01:36,000 --> 00:01:39,667
+The AWS integration is a prototype. The repository includes a Cloud Front
+
+21
+00:01:39,667 --> 00:01:43,333
+and WAF reference stack, plus an optional adapter for supported manual rule
+
+22
+00:01:43,333 --> 00:01:47,000
+additions.
+
+23
+00:01:50,000 --> 00:01:54,000
+Offline tests check payloads, rule preservation, and locking. No live AWS deployment
+
+24
+00:01:54,000 --> 00:01:58,000
+is claimed.
+
+25
+00:02:00,000 --> 00:02:04,500
+Aegis Flow makes response decisions visible. Try the browser simulation, replay an
+
+26
+00:02:04,500 --> 00:02:09,000
+incident, and explore the code.

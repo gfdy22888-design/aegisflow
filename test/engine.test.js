@@ -17,6 +17,23 @@ function freshEngine(ticks) {
   return e;
 }
 
+test('fresh API snapshot contains the five launchable scenario definitions', () => {
+  const list = createEngine().snapshot().scenarioList;
+  assert.deepStrictEqual(list.map(s => s.name).sort(), Object.keys(SCENARIOS).sort());
+  assert.ok(list.every(s => s.label && s.detail));
+});
+
+test('armed autopilot leaves a sustained benign crowd unblocked', () => {
+  const e = freshEngine(90);
+  e.setAuto(true);
+  e.startScenario('flash-crowd');
+  for (let i = 0; i < 60; i++) {
+    const s = e.tick();
+    assert.strictEqual(s.mitigations.length, 0);
+    assert.strictEqual(s.kpis.mitigatedRps, 0);
+  }
+});
+
 test('sustained http-flood: anomaly score holds (no baseline adaptation)', () => {
   const e = freshEngine(90);
   e.startScenario('http-flood');
@@ -81,6 +98,19 @@ test('rate-limit playbook measurably offloads the origin', () => {
   assert.ok(after.originRps < before.originRps * 0.6,
     `origin rps did not drop: ${before.originRps} → ${after.originRps}`);
   assert.ok(after.mitigatedRps > 0, 'no traffic counted as mitigated');
+});
+
+test('ingress equals origin plus edge offload, including the cache playbook', () => {
+  for (const type of ['rate-limit', 'cache']) {
+    const e = freshEngine(90);
+    e.startScenario('http-flood');
+    e.applyMitigation({ type, scopeType: 'global', limit: 30 });
+    for (let i = 0; i < 10; i++) {
+      const k = e.tick().kpis;
+      assert.ok(Math.abs(k.rawRps - k.originRps - k.mitigatedRps) <= 1,
+        `${type}: ingress=${k.rawRps}, origin=${k.originRps}, offload=${k.mitigatedRps}`);
+    }
+  }
 });
 
 test('autopilot applies the recommended playbook and logs it', () => {

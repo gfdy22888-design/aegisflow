@@ -29,10 +29,12 @@ const MIME = {
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 function serveStatic(req, res) {
-  let urlPath = decodeURIComponent(req.url.split('?')[0]);
+  let urlPath;
+  try { urlPath = decodeURIComponent(req.url.split('?')[0]); }
+  catch { res.writeHead(400); return res.end('bad request'); }
   if (urlPath === '/') urlPath = '/index.html';
   const file = path.normalize(path.join(PUBLIC_DIR, urlPath));
-  if (!file.startsWith(PUBLIC_DIR)) { res.writeHead(403); return res.end('forbidden'); }
+  if (!file.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(403); return res.end('forbidden'); }
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('not found'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
@@ -84,17 +86,23 @@ async function handleApi(req, res) {
       break;
     }
     case '/api/mitigation': {
+      if (USE_AWS && body.op !== 'add') return json(res, 409, { error: 'AWS prototype supports manual additions only. Remove cloud rules through AWS and restart the local demo.' });
       if (body.op === 'clear') engine.clearMitigations();
       else if (body.op === 'remove') engine.removeMitigation(body.id);
       else if (body.op === 'add') {
-        // In USE_AWS=1 mode this call would also push the rule to AWS WAFv2.
+        // Report AWS errors before claiming a local action succeeded.
+        let dispatch;
+        try { dispatch = await dispatchMitigation(body.spec); }
+        catch (e) { return json(res, 502, { error: `Mitigation dispatch failed: ${e.message}` }); }
         const id = engine.applyMitigation(body.spec);
-        dispatchMitigation(body.spec).catch((e) => console.error('[aws-adapter]', e.message));
-        return json(res, 200, { ok: true, id });
+        return json(res, 200, { ok: true, id, dispatch });
       }
       break;
     }
-    case '/api/auto': { engine.setAuto(body.enabled); break; }
+    case '/api/auto': {
+      if (USE_AWS && body.enabled) return json(res, 409, { error: 'Autopilot is available in local simulation only; AWS mode requires explicit manual additions.' });
+      engine.setAuto(body.enabled); break;
+    }
     default: return json(res, 404, { error: 'not found' });
   }
   return json(res, 200, { ok: true, snapshot: engine.snapshot() });

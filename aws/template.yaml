@@ -2,9 +2,9 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   AegisFlow — Shield Ops Console edge stack (Team Alpha, AWS x A10 Hack 2026).
-  CloudFront + WAFv2 + Shield Advanced in front of the origin; the mitigation
-  playbook rules that the console applies locally are the same rules this stack
-  runs at the edge (see lib/aws-adapter.js for the SDK dispatcher).
+  CloudFront + WAFv2 + private S3 origin reference stack. Not deployed or live-
+  account validated by this submission. Shield Advanced is optional and is not
+  provisioned. The Node console requires a separate backend host.
 
 Resources:
   OriginBucket:
@@ -24,12 +24,10 @@ Resources:
       Name: aegisflow-blocked-ips
       Scope: CLOUDFRONT
       IPAddressVersion: IPV4
-      Addresses: ['192.0.2.0/24']   # placeholder; dispatcher UpdateIPSet replaces it
+      Addresses: []
 
   # NOTE: Shield Advanced is an account-level subscription enabled via the Shield
-  # console/API (`aws shield create-protection --resource-arn <EdgeCDN arn>` after
-  # deploy) — it is not a CloudFormation resource type. Everything else here is
-  # deployable as-is; `npm start` with USE_AWS=1 then populates rules via SDK.
+  # console/API separately. No Shield Advanced subscription is created here.
 
   EdgeWAF:
     Type: AWS::WAFv2::WebACL
@@ -42,7 +40,7 @@ Resources:
         - Name: aegisflow-rate-limit
           Priority: 1
           Statement:
-            RateBasedStatement: { Limit: 1500, AggregateKeyType: IP }
+            RateBasedStatement: { Limit: 1500, EvaluationWindowSec: 60, AggregateKeyType: IP }
           Action: { Block: {} }
           VisibilityConfig: { CloudWatchMetricsEnabled: true, MetricName: ratelimit, SampledRequestsEnabled: true }
         # playbook: challenge on sensitive paths (CAPTCHA action)
@@ -83,7 +81,7 @@ Resources:
         Origins:
           - Id: origin
             DomainName: !GetAtt OriginBucket.RegionalDomainName
-            S3OriginConfig: { OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginOAI} }
+            S3OriginConfig: { OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OriginOAI}' }
         DefaultCacheBehavior:
           TargetOriginId: origin
           ViewerProtocolPolicy: redirect-to-https
@@ -96,6 +94,19 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig: { Comment: aegisflow-oai }
+
+  OriginBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OriginBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt OriginOAI.S3CanonicalUserId
+            Action: s3:GetObject
+            Resource: !Sub '${OriginBucket.Arn}/*'
 
   # --- console KPIs stream as custom metrics; alarms page the operator ---
   AnomalyAlarm:
@@ -116,6 +127,10 @@ Resources:
     Properties: { TopicName: aegisflow-alerts }
 
 Outputs:
-  DashboardUrl: { Value: !Sub https://${EdgeCDN.DomainName} }
-  WebACLId: { Value: !Ref EdgeWAF }
+  StaticOriginUrl: { Value: !Sub 'https://${EdgeCDN.DomainName}' }
+  OriginBucketName: { Value: !Ref OriginBucket }
+  WebACLId: { Value: !GetAtt EdgeWAF.Id }
+  WebACLName: { Value: aegisflow-edge }
+  BlockedIPSetId: { Value: !GetAtt AttackerIPSet.Id }
+  BlockedIPSetName: { Value: aegisflow-blocked-ips }
   BlockedIPSetArn: { Value: !GetAtt AttackerIPSet.Arn }

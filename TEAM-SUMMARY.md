@@ -1,15 +1,20 @@
-# TEAM ALPHA — AegisFlow (Shield Ops Console)
+# TEAM ALPHA — AegisFlow
 
-**Pitch:** AI-driven DDoS decision loop — EWMA + Shannon-entropy detection classifies HTTP flood / volumetric / slowloris / credential-stuffing / benign-spike in 1s ticks, recommends the playbook, applies rate-limit/challenge/block/cache and shows origin load collapse live (1797→526 rps measured).
+**Pitch:** The DDoS decision loop: detect → classify → recommend → mitigate → verify.
+**Stack:** Node stdlib, shared JavaScript engine, SSE, Canvas; optional AWS SDK v3.
+**Run:** `node server.js` → http://localhost:8080; tests: `npm test`.
+**Demo:** https://gfdy22888-design.github.io/aegisflow/
+**Repo:** https://github.com/gfdy22888-design/aegisflow
 
-**Stack:** Pure Node stdlib + SSE realtime (zero npm deps), UMD engine shared Node/browser, canvas ops console; AWS SDK v3 dispatcher (WAFv2 UpdateWebACL/RateBasedStatement/CAPTCHA/IPSet, CloudWatch metrics); SAM stack: CloudFront+WAFv2+Shield+alarms.
+**Works locally:** five scenarios, EWMA/entropy/signature classification, response
+playbooks, autonomous mitigation, source controls, audit trail and browser demo.
+**Simulated:** all traffic, p95 latency, origin load, offload and source metadata.
+**AWS prototype:** supported manual WAFv2 additions, IPSet updates, CloudWatch
+counter; offline request-contract tests, no live-account validation.
+**Reference template:** CloudFront + WAFv2 + private S3 + CloudWatch alarm + SNS.
+**Future work:** cloud autopilot/removal, runtime cache updates, Shield Advanced,
+live telemetry, authentication and durable storage.
 
-**Run:** `node server.js` → http://localhost:8080 — start `http-flood`, watch score pass 70, apply playbook or hit Autopilot. Offline demo: open `demo/index.html`.
-
-**Works vs mocked:**
-- REAL: simulator (5 scenarios incl. benign-spike anti-false-positive), full detection/classification math, playbook engine with measured origin-offload, autopilot, SSE dashboard, WAFv2 payload builders (lib/aws-adapter.js, auditable without creds).
-- MOCKED: the network itself (synthetic traffic). USE_AWS=1 pushes the same playbook specs to real WAFv2.
-
-**AWS mapping:** rate-limit→WAFv2 RateBasedStatement · challenge→Captcha action · block→IPSet/GeoMatch · cache→CloudFront cache policy · KPIs→CloudWatch custom metrics+alarm→SNS · volumetric layer→Shield Advanced.
-
-**Evidence:** aws/template.yaml · aws/ARCHITECTURE.md (playbook→API table) · lib/aws-adapter.js (SDK v3, production-shaped) · demo/index.html (real recorded incident).
+**Evidence:** `aws/ARCHITECTURE.md`, `aws/template.yaml`, `lib/aws-adapter.js`,
+`test/`, `docs/demo/aegisflow-demo.mp4`, `docs/demo/verification/`, `docs/screenshots/`.
+**Human handoff:** `docs/DEVPOST-READY.md`; final Devpost entry is user-submitted.

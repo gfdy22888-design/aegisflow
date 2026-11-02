@@ -1,106 +1,111 @@
-# AegisFlow — Shield Ops Console
+# AegisFlow — the DDoS decision loop
 
-> **Team Alpha · AWS x A10 Hack 2026** ("Shield with A10")
+An adaptive traffic-anomaly detection and response prototype: **detect → classify
+→ recommend → mitigate → verify**. A diverse flash crowd stays unblocked, even
+with automatic response armed.
 
-An AI-driven traffic anomaly detection & DDoS mitigation operations console. A live traffic
-simulator feeds a multi-signal detection engine (EWMA residual + Shannon entropy of sources
-and paths + error ratio + hold-time analysis); the console classifies attacks in real time
-(HTTP flood, volumetric, slowloris, credential stuffing — and *benign spikes*, so the judge
-can see it avoids false positives), and applies mitigation playbooks whose effect on origin
-load is visible immediately.
+[Interactive demo and narrated video](https://gfdy22888-design.github.io/aegisflow/)
+· [Launch simulation](https://gfdy22888-design.github.io/aegisflow/live.html)
+· [Submission text](SUBMISSION.md)
 
-![deps](https://img.shields.io/badge/npm%20deps-0-2dd4bf) ![realtime](https://img.shields.io/badge/stream-SSE-blue) ![mode](https://img.shields.io/badge/USE__AWS%3D1-WAFv2%20dispatcher-orange)
+All traffic, latency and offload figures are **synthetic**. The local app works
+without credentials or external services. AWS integration is an offline-tested
+prototype; no AWS deployment, cloud benchmark or production protection is claimed.
 
-## Screenshots
+## Run locally
 
-**Baseline — calm, calibrated** (score 0, entropy healthy, no alerts):
+Requires Node.js 18 or newer. No npm dependencies or installation are needed.
 
-![baseline](docs/screenshots/01-baseline.png)
+```sh
+node server.js
+# Open http://localhost:8080
+npm test
+```
 
-**Autopilot in action** — HTTP flood detected (conf=1.0) → rate-limit applied automatically →
-attackers capped at 30 rps each (▼ counters), origin offloaded, p95 recovered (41 ms):
+1. Start **HTTP Flood (L7)** in Attack Simulator and watch the source concentration
+   and rate deviation trigger classification.
+2. Stop the attack, arm **AUTO-MITIGATE**, and launch another HTTP flood. The
+   recommended path rate limit applies automatically after three hot ticks.
+3. Compare **Edge rps** (raw ingress), **Origin rps**, and **Mitigated/s**. Attacking
+   sources are capped at 30 rps in the simulation, and the action is audited.
+4. Stop all scenarios and clear mitigations. Start **Flash Crowd** while automatic
+   response remains armed: source entropy rises, the engine recommends caching,
+   and no automatic mitigation is applied.
 
-![autopilot](docs/screenshots/03-autopilot-mitigated.png)
+The [hosted interactive demo](https://gfdy22888-design.github.io/aegisflow/live.html)
+runs the same engine in your browser. `demo/index.html` is a self-contained replay
+of a current-engine simulated incident and also opens directly from disk.
 
-**The trust moment** — a 2.6k-rps benign flash crowd (478 unique IPs, autopilot still ARMED)
-is classified benign at 85% confidence: *serve from edge cache, do NOT block*. Zero mitigations:
+## Why it exists
 
-![benign restraint](docs/screenshots/04-benign-restraint.png)
+Responders need to decide what a traffic surge means, which response fits it and
+whether that response helped. AegisFlow puts the signals, classification,
+recommended action and visible effect on one screen. It also demonstrates the
+cost of treating every spike as an attack: legitimate customers can be blocked.
 
-## Problem
+## Features
 
-When an L7 flood hits, the questions that matter are: *what kind of attack is this, which
-playbook do I run, and is it actually working?* Most dashboards show traffic graphs but not
-a decision loop. AegisFlow closes the loop: **detect → classify → recommend → mitigate → verify**,
-on one screen, in one second ticks.
-
-## What it does
-
-- **Live traffic simulator** — human-ish baseline (~40 IPs, page mix, sessions) plus five
-  injectable scenarios: `http-flood`, `volumetric`, `slowloris`, `credential-stuffing`,
-  and `benign-spike` (a flash-crowd that must NOT be auto-blocked — the anti-false-positive demo).
-- **Detection engine** (`lib/engine.js`, pure JS): per-tick KPIs (rps, unique IPs, source/path
-  entropy, error ratio, avg hold, p95), EWMA baseline with variance tracking, and a weighted
-  anomaly score. Classifies the attack class and assigns a playbook.
-- **Mitigation playbooks** — `rate-limit` (per-path/IP threshold), `challenge` (JS interstitial),
-  `block` (IP/ASN/geo/kind), `cache` (absorb GET floods at edge). Applying one immediately
-  changes the numbers: raw rps vs origin rps split, dropped counters, p95 recovery.
-- **Autopilot** — when anomaly score ≥ 70 for consecutive ticks, the recommended playbook is
-  applied automatically and every action is logged to an audit trail.
-- **SSE realtime** — dashboard updates via Server-Sent Events, 1 Hz, no polling libraries.
+- Five scenarios: HTTP flood, volumetric signature, slowloris signature, credential
+  stuffing, and benign flash crowd. These generate traffic records, not network attacks.
+- Adaptive EWMA rate baseline, Shannon source/path entropy, error ratio and
+  connection-hold signals, combined with a rule-based signature classifier.
+- Rate-limit, challenge, block, geo-block and cache simulation with visible offload.
+- Local autopilot: three consecutive ticks with score ≥70, or a classified attack
+  with confidence ≥0.6 and score ≥45. Benign crowds stay unblocked in this demo.
+- One-second SSE updates, source actions, alerts and an audit trail.
+- English narrated 1080p video, subtitles, screenshots and a project thumbnail.
 
 ## Architecture
 
+```text
+Browser console ← SSE / JSON → Node stdlib server
+                                  ├─ shared simulation + detection engine
+                                  ├─ local mitigation + autopilot
+                                  └─ optional manual AWS adapter
+                                       ├─ WAFv2 Get/UpdateWebACL + IPSet
+                                       └─ CloudWatch PutMetricData
+
+GitHub Pages → same engine in-browser + replay + narrated MP4
+Reference AWS stack → CloudFront + WAFv2 + private S3 + CloudWatch alarm/SNS
 ```
- browser ◄──SSE 1Hz── Node server (server.js, zero deps)
-   │                    ├── /api/scenario   start/stop attack scenarios
-   │                    ├── /api/mitigation add/remove/clear playbook rules
-   │                    ├── /api/auto       autopilot on/off
-   │                    └── lib/engine.js   simulator + detector + mitigation engine
-   └── dashboard (public/index.html): ops console, canvas charts, alert feed, audit log
 
- USE_AWS=1 → lib/aws-adapter.js routes every mitigation to real AWS (WAFv2 rate-based
-             rules, IP sets, CloudFront cache policies) with API-level payload builders
-             + local replay verification (dispatches are checked against rule-name schemas).
-```
+## AWS technology and evidence
 
-## AWS services used (and why)
-
-| Service | Role |
+| Service | Role and implementation status |
 |---|---|
-| **CloudFront** | edge absorption — `cache` playbook maps to cache policies; origin rps vs raw rps is exactly the CloudFront→origin ratio |
-| **WAFv2** | `rate-limit` → RateBasedStatement; `block` → IPSet/GeoMatch/ByteMatch rules; `challenge` → CAPTCHA/Challenge action |
-| **Shield Advanced** | volumetric layer; the volumetric scenario simulates what Shield absorbs before WAF sees it |
-| **Lambda@Edge / CloudFront Functions** | challenge interstitial + per-request scoring at the edge |
-| **CloudWatch** | the KPI stream (rps, entropy, p95, error ratio) maps 1:1 to custom metrics + alarms |
+| WAFv2 | Optional manual path/global rate-limit, path CAPTCHA, explicit IPv4 and country blocking; SDK request behavior tested offline |
+| CloudFront + S3 | Un-deployed SAM reference stack, private origin and OAI access policy; Node backend hosting remains separate |
+| CloudWatch + SNS | Adapter mitigation counter and matching alarm in reference template |
+| Shield Advanced / Lambda@Edge | Future integration options; not provisioned or called |
 
-`aws-adapter.js` builds real WAFv2 API payloads (CreateRule / UpdateIPSet / CreateWebACL
-shapes) locally so the code path is auditable without credentials; see
-`aws/ARCHITECTURE.md` + `aws/template.yaml` (deployable SAM: CloudFront + WAF + Shield +
-Functions + dashboard bucket).
+The adapter reads a WebACL and its LockToken, retains existing rules, serializes
+updates within the process and deduplicates successful additions. WAF uses a
+rolling 60-second rate window, which is not equivalent to the simulator's exact
+per-second cap. See [AWS architecture and setup](aws/ARCHITECTURE.md).
 
-## Run it
+`USE_AWS=1` requires separately installed AWS SDK clients, credentials and resource
+IDs. It supports explicit manual additions only. Unsupported actions return an
+error; autopilot, clear and remove are disabled in AWS mode. This prototype should
+only be evaluated with dedicated demo resources. No cloud calls were made for the video.
 
-```bash
-node server.js        # → http://localhost:8080  (no npm install, no credentials)
-npm test              # 10 engine regression tests (node:test, zero deps)
-# USE_AWS=1 node server.js   # same UI, mitigation dispatcher targets real AWS WAFv2
-```
+## Validation and limitations
 
-Then: start `http-flood`, watch the score climb past 70, hit **Autopilot** or apply the
-recommended playbook manually, and watch origin rps collapse. Try `benign-spike` with
-autopilot on: it classifies as *not* an attack and no customers get blocked.
-Offline walkthrough: open `demo/index.html`.
+`npm test` covers detection, sustained attacks, benign autopilot restraint,
+rate/offload accounting, scenario discovery, AWS request contracts and server
+startup/malformed URLs. CI runs on Node 18, 20 and 22.
 
-## What's mocked vs real
+- Statistical adaptation and rule-based classification; no LLM or trained neural model.
+- Randomized single-process simulation; simulated p95 is not a measured latency percentile.
+- No real traffic collector, authentication, persistent audit store or production scaling.
+- Synthetic geo/ASN/kind metadata is not live reputation data.
+- Cloud lifecycle sync, cross-process update retries and live-account validation remain future work.
 
-- **Real, runs now:** simulator, full detection/classification math, playbook engine with
-  measurable origin-offload, autopilot decision loop, SSE dashboard, WAFv2 payload builders.
-- **Mocked:** the network itself (deterministic synthetic traffic). In AWS mode the same
-  playbook specs are what the included SAM stack runs for real at the edge.
+## Submission assets
 
-## Limitations
+- [Narrated demo](docs/demo/aegisflow-demo.mp4) · [English subtitles](docs/demo/aegisflow-demo.en.srt)
+- [Screenshots](docs/screenshots/) · [Logo](docs/logo.png)
+- [Submission text](SUBMISSION.md) · [Final handoff](docs/DEVPOST-READY.md)
+- [Video verification](docs/demo/verification/recording-report.json)
 
-- Single-process simulation; the detector design (EWMA + entropy, 1 s windows) is the part
-  that ports to Lambda@Edge, not the simulator.
-- Geo/ASN scopes operate on synthetic metadata.
+AI tools assisted implementation and documentation. Demo narration is synthetic
+(Microsoft Zira); displayed data comes from the running local engine.

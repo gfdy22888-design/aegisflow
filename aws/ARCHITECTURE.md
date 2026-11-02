@@ -1,56 +1,68 @@
-# AegisFlow — AWS Architecture & Local→AWS Mapping
+# AegisFlow — local prototype and AWS integration
 
-Real event: AWS x A10 Hack 2026 — "Scale with AWS. Shield with A10. Secure Your Future."
+**Demo status:** all video traffic and performance measurements are synthetic.
+The local detector, playbooks and autopilot run now. AWS SDK requests are covered
+by offline contract tests; no AWS account deployment or enforcement is claimed.
 
-## Edge stack (aws/template.yaml, SAM)
+## Reference edge stack
 
 ```
-                attacker bots                         legit users
-                     └───────┬────────────────────────────┘
-                             ▼
-        ┌──────────────── CloudFront (EdgeCDN) ────────────────┐
-        │  Shield Advanced (L3/L4 volumetric absorb)           │
-        │  WAFv2 WebACL "aegisflow-edge":                      │
-        │   1. rate-limit  RateBasedStatement 1500/5min/IP     │
-        │   2. challenge   ByteMatch /api/login → CAPTCHA      │
-        │   3. block       IPSetReference (dispatcher-fed)     │
-        │   4. managed     AWSManagedRulesCommonRuleSet        │
-        └───────────────────────┬──────────────────────────────┘
-                                ▼
-                        S3 origin (private, OAI)
-                                │
-              CloudWatch metrics + alarm → SNS (AegisFlow/Mitigations)
+Clients → CloudFront → WAFv2 WebACL → private S3 static origin (OAI)
+                         │
+              CloudWatch Applied metric → alarm → SNS
+
+Node console (separate host) → manual AWS adapter → WAFv2 / CloudWatch
 ```
 
-## Console playbook → real AWS API mapping
+`aws/template.yaml` describes CloudFront, WAFv2, an IPv4 IP set, private S3 with
+its origin access policy, and an alarm. Deploy it in `us-east-1` for CloudFront
+WAF scope. It is an un-deployed reference template. It does not host the Node
+server or connect a live traffic collector. Shield Advanced and Lambda@Edge are
+future integration options; neither is provisioned here.
 
-The console (`lib/aws-adapter.js`) dispatches the exact specs you click to real WAFv2 SDK v3
-calls when `USE_AWS=1` — production-shaped code, auditable without credentials:
+## Console playbook → AWS implementation
 
-| Console playbook (local run) | AWS API call (USE_AWS=1) | IaC evidence (aws/template.yaml) |
+| Local playbook | Adapter implementation | Status |
 |---|---|---|
-| `rate-limit` (path/IP, limit N) | `UpdateWebACL` → `RateBasedStatement{Limit: N*60, AggregateKeyType: IP}` | `aegisflow-rate-limit` rule |
-| `challenge` (path) | `UpdateWebACL` → ByteMatch on UriPath + `Captcha` action | `aegisflow-challenge-login` rule |
-| `block` (IP) | `UpdateIPSet` on `WAF_IPSET_ARN` + `IPSetReferenceStatement` | `aegisflow-block-list` rule + `AttackerIPSet` |
-| `block` (geo) | `UpdateWebACL` → `GeoMatchStatement{CountryCodes}` | (add rule via same dispatcher) |
-| `cache` | CloudFront cache policy update (`UpdateDistribution`) | CloudFront `DefaultCacheBehavior` + managed CachingOptimized |
-| KPI stream | `PutMetricData` (Namespace `AegisFlow/Mitigations`) + alarms | `AnomalyAlarm` + SNS |
+| Rate-limit, path/global | GetWebACL → UpdateWebACL; RateBasedStatement, explicit 60-second window, path scope-down when supplied | Implemented, offline-tested |
+| Challenge, path | Exact UriPath ByteMatchStatement + Captcha action | Implemented, offline-tested |
+| Block, explicit IPv4 | GetIPSet → UpdateIPSet, preserving addresses; IPSetReferenceStatement in WebACL | Implemented, offline-tested |
+| Block, country code | GeoMatchStatement + Block | Implemented, offline-tested |
+| Cache | CloudFront managed cache policy in reference template | Runtime cache changes not implemented |
+| Mitigation counter | PutMetricData, AegisFlow/Mitigations / Applied | Implemented; dimensionless series matches alarm |
+| Autopilot, remove, clear | Local engine only | Rejected in AWS mode; cloud lifecycle sync is future work |
 
-Every applied mitigation is also deduplicated (TTL lock) and logged — mirroring the console's
-audit trail.
+Each WebACL update reads the current configuration and LockToken, retains existing
+rules, assigns an unused priority and appends/replaces its named rule. Requests
+are serialized within this process. Successful additions deduplicate for five
+minutes; failed updates remain retryable. Cross-process optimistic-lock retries
+are not implemented. Use a dedicated demo WebACL.
 
-## `USE_AWS=1` switch design
+WAF rate enforcement uses a rolling time window. A local 30-rps cap maps to an
+1800-request / 60-second threshold, **not** an exact 30-rps guarantee on AWS.
+Synthetic source kinds and ASN labels have no AWS enforcement mapping here.
 
-`server.js` picks the dispatcher at boot: `localDispatcher` (logs the exact rule it *would*
-push, with the same `ruleNameFor()` naming) or `awsDispatcher` (real SDK calls above). The
-dashboard, engine and playbook semantics are identical — only the enforcement point changes
-from the local simulator to the WAFv2 WebACL in `aws/template.yaml`.
+## Optional AWS mode setup
 
-## Why these services (judging: "Use of AWS Tech")
+The normal demo needs no credentials, no installation and no network calls.
+To evaluate the optional adapter separately, install:
 
-- **Shield Advanced + CloudFront** = the "Shield" in the brief: volumetric floods die at the
-  edge; the `volumetric` scenario exists precisely to show that layer.
-- **WAFv2 rate-based + CAPTCHA + IPSet** = the three L7 playbooks, mapped 1:1 from console to
-  edge — no bespoke proxying, native AWS primitives.
-- **CloudWatch custom metrics + alarm + SNS** = the console's KPI stream is the same telemetry
-  you'd page on in production.
+```sh
+npm install --no-save @aws-sdk/client-wafv2 @aws-sdk/client-cloudwatch
+```
+
+Supply standard AWS credentials with least-privilege WAF/CloudWatch permissions
+and set `USE_AWS=1`, `WAF_WEBACL_ID`, `WAF_WEBACL_NAME`, `WAF_SCOPE=CLOUDFRONT`.
+For IP blocks also set `WAF_IPSET_ARN`, `WAF_IPSET_ID`, `WAF_IPSET_NAME` from the
+template outputs. The adapter selects `us-east-1` for CloudFront scope.
+
+Only manual supported additions are sent to AWS. The API reports dispatch errors
+and disables autopilot, remove and clear in AWS mode. Remove remote rules through
+AWS and restart the local process when finished. Local observations remain
+simulated, including latency and offload; the console has no live AWS telemetry.
+
+## Primary API references
+
+- [UpdateWebACL: read, modify, replace and LockToken](https://docs.aws.amazon.com/waf/latest/APIReference/API_UpdateWebACL.html)
+- [RateBasedStatement: windows and scope-down statements](https://docs.aws.amazon.com/waf/latest/APIReference/API_RateBasedStatement.html)
+- [UpdateIPSet](https://docs.aws.amazon.com/waf/latest/APIReference/API_UpdateIPSet.html)
